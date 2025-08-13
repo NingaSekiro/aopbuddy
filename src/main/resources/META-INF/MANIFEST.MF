@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Archiver-Version: Plexus Archiver
+Created-By: Apache Maven 3.6.0
+Build-Jdk: 1.8.0_171
+Agent-Class: com.aopbuddy.agent.Agent4
+Can-Retransform-Classes: true
+Can-Redefine-Classes: true
+Main-Class: com.aopbuddy.agent.Demo4
+Class-Path: lib/tools.jar
