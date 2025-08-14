@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public final class Context {
     public static final List<Advisor> ADVISORS = Collections.synchronizedList(new ArrayList<>());
 
-    static Instrumentation inst ;
+    public static Instrumentation inst ;
 
 //    static {
 //        init(null);

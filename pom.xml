@@ -11,6 +11,8 @@
         <bytebuddy.version>1.14.8</bytebuddy.version>
         <aspectj.version>1.9.24</aspectj.version>
         <lombok.version>1.18.34</lombok.version>
+        <asm.version>9.5</asm.version>
+
     </properties>
 
     <dependencies>
@@ -28,6 +30,12 @@
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
             <version>${aspectj.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>${asm.version}</version>
+
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
