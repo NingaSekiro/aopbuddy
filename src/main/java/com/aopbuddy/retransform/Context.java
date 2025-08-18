@@ -12,27 +12,32 @@ import net.bytebuddy.matcher.ElementMatchers;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 public final class Context {
     public static final List<Advisor> ADVISORS = Collections.synchronizedList(new ArrayList<>());
 
-    public static Instrumentation inst ;
+    public static final List<String> CLASS_PATHS = new ArrayList<>();
 
-//    static {
-//        init(null);
-//    }
+    public static Instrumentation inst;
+
+    static {
+        init(null);
+    }
 
     public static void init(Instrumentation instrumentation) {
         if (instrumentation != null) {
             inst = instrumentation;
+        } else {
+            inst = ByteBuddyAgent.install();
         }
         ClassFileTransformer buddyTransformer2 = new AgentBuilder
                 .Default()
+                .disableClassFormatChanges()
 //                重新 inject 了同一个类
                 .ignore(getDefaultIgnore())
-                .disableClassFormatChanges()
                 .type(ElementMatchers.not((ElementMatchers.isSynthetic())
                         .or(TypeDescription::isAnonymousType)
                 ).and(new TypeElementMatcher()))
@@ -72,13 +77,14 @@ public final class Context {
     }
 
 
-    private static boolean filter(Class<?> clz) {
-        for (Advisor advisor : Context.ADVISORS) {
-            if (advisor.getPointcut().matches(new ClassObject.ForClass(clz))) {
-                return true;
-            }
-        }
-        return false;
+    public static boolean filter(Class<?> clz) {
+        TypeDescription typeDescription = TypeDescription.ForLoadedType.of(clz);
+        return ElementMatchers.not(
+                        getDefaultIgnore()
+                                .or(ElementMatchers.isSynthetic().or(TypeDescription::isAnonymousType)
+                                ))
+                .and(new TypeElementMatcher())
+                .matches(typeDescription);
     }
 
     /**

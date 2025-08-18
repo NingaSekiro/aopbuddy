@@ -1,9 +1,7 @@
 package com.aopbuddy.aspect;
 
 
-
 import com.aopbuddy.infrastructure.MethodSignature;
-import com.aopbuddy.infrastructure.PointcutUtils;
 import com.aopbuddy.retransform.Pointcut;
 
 import java.lang.reflect.Method;
@@ -19,7 +17,7 @@ public class MethodPointcut extends Pointcut {
     private final MethodSignature methodSignature;
 
     protected MethodPointcut(String className, MethodSignature methodSignature) {
-        super(PointcutUtils.getSignature(className, methodSignature));
+        super(MethodSignature.getSignature(className, methodSignature));
         if (className == null || className.length() == 0) {
             throw new IllegalArgumentException("className is null");
         }

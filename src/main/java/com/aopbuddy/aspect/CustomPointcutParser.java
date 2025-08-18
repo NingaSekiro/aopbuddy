@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.aopbuddy.aspect;
 
+import com.aopbuddy.retransform.Context;
 import org.aspectj.bridge.*;
 import org.aspectj.weaver.*;
 import org.aspectj.weaver.bcel.BcelWorld;
@@ -83,10 +84,12 @@ public class CustomPointcutParser {
                 throw new UnsupportedOperationException("Cannot handle if, cflow, and cflowbelow primitives");
             }
         }
-        BcelWorld world = new BcelWorld();
-        world.setMessageHandler(new CustomMessageHandler());
-        world.setBehaveInJava5Way(true);
-        this.world = world;
+        if (Context.CLASS_PATHS.isEmpty()) {
+            this.world = new BcelWorld("");
+            this.world.setMessageHandler(new CustomMessageHandler());
+        } else {
+            this.world = new BcelWorld(Context.CLASS_PATHS, new CustomMessageHandler(), null);
+        }
     }
 
     public void setLintProperties(Properties properties) {
@@ -128,7 +131,7 @@ public class CustomPointcutParser {
     }
 
     protected Pointcut resolvePointcutExpression(String expression, Class<?> inScope,
-                                                                          PointcutParameter[] formalParameters) {
+                                                 PointcutParameter[] formalParameters) {
         try {
             PatternParser parser = new PatternParser(expression);
             parser.setPointcutDesignatorHandlers(pointcutDesignators, world);
@@ -144,7 +147,7 @@ public class CustomPointcutParser {
     }
 
     protected Pointcut concretizePointcutExpression(Pointcut pc, Class<?> inScope,
-                                                                             PointcutParameter[] formalParameters) {
+                                                    PointcutParameter[] formalParameters) {
         ResolvedType declaringTypeForResolution = null;
         if (inScope != null) {
             declaringTypeForResolution = getWorld().resolve(inScope.getName());

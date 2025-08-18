@@ -1,5 +1,6 @@
 package com.aopbuddy.aspect;
 
+import org.aspectj.util.FuzzyBoolean;
 import org.aspectj.weaver.ResolvedMember;
 import org.aspectj.weaver.ResolvedType;
 import org.aspectj.weaver.Shadow;
@@ -83,6 +84,14 @@ public class CustomPointcutExpressionImpl implements CustomPointcutExpression {
         if (info.getType().isAspect()) {
             return false;
         }
+        if (pointcut instanceof KindedPointcut) {
+            KindedPointcut pointcut = (KindedPointcut) this.pointcut;
+            if (pointcut.getSignature().getDeclaringType() instanceof WildTypePattern) {
+                WildTypePattern pattern = (WildTypePattern) pointcut.getSignature().getDeclaringType();
+                ResolvedType type = info.getType();
+                return pattern.matches(type, TypePattern.STATIC).alwaysTrue();
+            }
+        }
         return pointcut.fastMatch(info).maybeTrue();
     }
 
@@ -133,7 +142,7 @@ public class CustomPointcutExpressionImpl implements CustomPointcutExpression {
     }
 
     private StandardShadowMatchImpl getShadowMatch(Shadow forShadow) {
-        org.aspectj.util.FuzzyBoolean match = pointcut.match(forShadow);
+        FuzzyBoolean match = pointcut.match(forShadow);
         Test residueTest = Literal.TRUE;
         ExposedState state = getExposedState();
         if (match.maybeTrue()) {

@@ -7,13 +7,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * @ IDE    ：IntelliJ IDEA.
- * @ Author ：dahuoyzs
- * @ Date   ：2020/5/23  15:48
- * @ Desc   ：
- */
-public class Demo4 {
+public class Attacher {
 
     public static void main(String[] args) throws Exception {
         List<VirtualMachineDescriptor> list = VirtualMachine.list();

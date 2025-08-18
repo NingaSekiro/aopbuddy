@@ -1,17 +1,13 @@
 package com.aopbuddy.infrastructure;
 
 
-
 import aj.org.objectweb.asm.Type;
 
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
-/**
- * @author lipan
- * @since 2025-01-21
- */
+
 public class MethodSignature {
     /**
      * 支持通配符
@@ -26,6 +22,9 @@ public class MethodSignature {
      */
     private final String descriptor;
 
+    public static final String POUND = "#";
+
+
     public MethodSignature(String name, String descriptor) {
         if (name.indexOf('(') >= 0) {
             throw new IllegalArgumentException("methodName '" + name + "' is invalid");
@@ -36,6 +35,10 @@ public class MethodSignature {
 
     public MethodSignature(String name, Class<?> rType, Class<?>... pTypes) {
         this(name, getDescriptor(rType, pTypes));
+    }
+
+    public static String getSignature(String className, MethodSignature methodSignature) {
+        return className + POUND + methodSignature.toString();
     }
 
     public MethodSignature(Method method) {
