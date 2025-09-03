@@ -21,6 +21,7 @@ import java.util.List;
  */
 public class ListenerAdvice {
 
+
     @SneakyThrows
     @Advice.OnMethodEnter
     public static void onEnter(@Advice.This(optional = true) Object thiz,
@@ -61,13 +62,15 @@ public class ListenerAdvice {
             if (advisor.getPointcut().matches(new MethodObject.ForMethod(method))) {
                 listeners.add(advisor.getListener());
             }
-        }        if (listeners.isEmpty()) return;
+        }
+        if (listeners.isEmpty()) return;
         if (thrown != null) {
             for (Listener l : listeners) {
                 l.onException(thiz, method, args, thrown);
             }
         } else {
             for (Listener l : listeners) {
+                System.out.println("onExit" + l);
                 MockedReturnValue after = l.after(thiz, method, args, returned);
                 if (after != null && after.isMock()) {
                     returned = after.getMockValue();

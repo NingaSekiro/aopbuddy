@@ -19,31 +19,35 @@ import java.util.stream.Collectors;
 public final class Context {
     public static final List<Advisor> ADVISORS = Collections.synchronizedList(new ArrayList<>());
 
-    public static final List<String> CLASS_PATHS = new ArrayList<>();
-
+    public static ClassLoader CLASS_LOADER;
     public static Instrumentation inst;
-
-    static {
-        init(null);
-    }
+    // 这里在java agent下可能有问题
+//    static {
+//        init(null);
+//    }
 
     public static void init(Instrumentation instrumentation) {
-        if (instrumentation != null) {
+        // inst只维持一份
+        if (inst == null && instrumentation != null) {
             inst = instrumentation;
-        } else {
+        } else if (inst == null) {
             inst = ByteBuddyAgent.install();
         }
-        ClassFileTransformer buddyTransformer2 = new AgentBuilder
-                .Default()
-                .disableClassFormatChanges()
+        // 只有第一次才会添加ClassFileTransformer，防止后面添加，中间层用ADVISORS来动态控制
+        if (TransformerController.buddyTransformer == null) {
+            ClassFileTransformer buddyTransformer2 = new AgentBuilder
+                    .Default()
+                    .disableClassFormatChanges()
 //                重新 inject 了同一个类
-                .ignore(getDefaultIgnore())
-                .type(ElementMatchers.not((ElementMatchers.isSynthetic())
-                        .or(TypeDescription::isAnonymousType)
-                ).and(new TypeElementMatcher()))
-                .transform(new PointcutTransformer())
-                .makeRaw();
-        inst.addTransformer(buddyTransformer2, true);
+                    .ignore(getDefaultIgnore())
+                    .type(ElementMatchers.not((ElementMatchers.isSynthetic())
+                            .or(TypeDescription::isAnonymousType)
+                    ).and(new TypeElementMatcher()))
+                    .transform(new PointcutTransformer())
+                    .makeRaw();
+            TransformerController.buddyTransformer = buddyTransformer2;
+            inst.addTransformer(TransformerController.buddyTransformer, true);
+        }
     }
 
 
@@ -68,7 +72,8 @@ public final class Context {
         Class[] allLoadedClasses = inst.getAllLoadedClasses();
         List<Class> classes = Arrays.stream(allLoadedClasses)
                 .filter(clz -> filter(clz)).collect(Collectors.toList());
-        System.out.println("classes: " + classes);
+        System.out.println("weave classes: " + classes);
+        System.out.println("weave advisors" + ADVISORS);
         if (classes.isEmpty()) {
             System.out.println("empty poincut");
             return;
@@ -90,7 +95,7 @@ public final class Context {
     /**
      * 默认忽视包
      */
-    private static ElementMatcher.Junction<? super TypeDescription> getDefaultIgnore() {
+    public static ElementMatcher.Junction<? super TypeDescription> getDefaultIgnore() {
         return ElementMatchers.nameStartsWith("java.")
                 .or(ElementMatchers.nameStartsWith("jdk."))
                 .or(ElementMatchers.nameStartsWith("javax."))

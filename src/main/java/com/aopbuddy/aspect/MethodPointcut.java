@@ -52,7 +52,7 @@ public class MethodPointcut extends Pointcut {
 
     @Override
     public String toString() {
-        return className + "#" + methodSignature;
+        return "MethodPointcut{" + className + "#" + methodSignature + "_" + hashCode();
     }
 
     @Override

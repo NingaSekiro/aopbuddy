@@ -72,10 +72,6 @@ public class CustomPointcutParser {
         return new CustomPointcutParser(getAllSupportedPointcutPrimitives());
     }
 
-    public static CustomPointcutParser getPointcutParserSupportingSpecifiedPrimitives(Set<PointcutPrimitive> supportedPointcutKinds) {
-        return new CustomPointcutParser(supportedPointcutKinds);
-    }
-
     private CustomPointcutParser(Set<PointcutPrimitive> supportedPointcutKinds) {
         supportedPrimitives = supportedPointcutKinds;
         for (PointcutPrimitive element : supportedPointcutKinds) {
@@ -84,11 +80,12 @@ public class CustomPointcutParser {
                 throw new UnsupportedOperationException("Cannot handle if, cflow, and cflowbelow primitives");
             }
         }
-        if (Context.CLASS_PATHS.isEmpty()) {
+        // classPath适配很难
+        if (Context.CLASS_LOADER == null) {
             this.world = new BcelWorld("");
             this.world.setMessageHandler(new CustomMessageHandler());
         } else {
-            this.world = new BcelWorld(Context.CLASS_PATHS, new CustomMessageHandler(), null);
+            this.world = new BcelWorld(Context.CLASS_LOADER, new CustomMessageHandler(), null);
         }
     }
 
