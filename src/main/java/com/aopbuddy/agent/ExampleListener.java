@@ -5,6 +5,7 @@ import com.aopbuddy.retransform.Listener;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 public class ExampleListener implements Listener {
@@ -19,8 +20,8 @@ public class ExampleListener implements Listener {
 
     @Override
     public MockedReturnValue after(Object target, Method method, Object[] args, Object returnValue) {
-        System.out.println("[Listener] after " + method + " ret=" + returnValue);
-        return new MockedReturnValue(true, "mocked");
+        System.out.println("[Listener] after " + method + "args" + Arrays.toString(args) + " ret=" + returnValue);
+        return new MockedReturnValue(false, "mocked");
     }
 
     @Override

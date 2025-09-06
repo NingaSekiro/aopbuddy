@@ -81,12 +81,12 @@ public class CustomPointcutParser {
             }
         }
         // classPath适配很难
-        if (Context.CLASS_LOADER == null) {
+//        if (Context.CLASS_LOADER == null) {
             this.world = new BcelWorld("");
             this.world.setMessageHandler(new CustomMessageHandler());
-        } else {
-            this.world = new BcelWorld(Context.CLASS_LOADER, new CustomMessageHandler(), null);
-        }
+//        } else {
+//            this.world = new BcelWorld(Context.CLASS_LOADER, new CustomMessageHandler(), null);
+//        }
     }
 
     public void setLintProperties(Properties properties) {

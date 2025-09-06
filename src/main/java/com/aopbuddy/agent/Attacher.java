@@ -2,30 +2,34 @@ package com.aopbuddy.agent;
 
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
+import org.apache.groovy.parser.antlr4.util.StringUtils;
 
 import java.io.File;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class Attacher {
 
     public static void main(String[] args) throws Exception {
         List<VirtualMachineDescriptor> list = VirtualMachine.list();
+        int s = -1;
         for (int i = 0; i < list.size(); i++) {
             VirtualMachineDescriptor jvm = list.get(i);
+            String lowerCase = jvm.displayName().toLowerCase(Locale.ROOT);
             System.out.println("[" + i + "]ID:" + jvm.id() + ",Name:" + jvm.displayName());
+            if (lowerCase.contains("spring")||lowerCase.contains("catalina")) {
+                s = i;
+            }
         }
-        System.out.println("请选择第几个");
-        Scanner scanner = new Scanner(System.in);
-        int s = scanner.nextInt();
         VirtualMachineDescriptor virtualMachineDescriptor = list.get(s);
         VirtualMachine attach = VirtualMachine.attach(virtualMachineDescriptor.id());
-        String agentJar = "D:\\Code\\aopbuddy\\target\\aopbuddy-1.0-jar-with-dependencies.jar";
-        File file = new File(agentJar);
-        System.out.println(agentJar);
+        File classFile = new File(Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+        File file = new File(classFile.getParent(), "/aopbuddy-1.0-jar-with-dependencies.jar");
+        System.out.println(file.getAbsolutePath());
         System.out.println(file.exists());
         try {
-            attach.loadAgent(agentJar, "param");
+            attach.loadAgent(file.getAbsolutePath(), "param");
         } finally {
             attach.detach();
         }

@@ -2,6 +2,7 @@ package com.aopbuddy.retransform;
 
 import com.aopbuddy.aspect.ClassObject;
 import com.aopbuddy.infrastructure.TypeElementMatcher;
+import groovy.lang.GroovyClassLoader;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import net.bytebuddy.agent.ByteBuddyAgent;
@@ -9,6 +10,8 @@ import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatchers;
+import org.codehaus.groovy.reflection.SunClassLoader;
+import org.codehaus.groovy.runtime.callsite.CallSiteClassLoader;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
@@ -18,9 +21,8 @@ import java.util.stream.Collectors;
 
 public final class Context {
     public static final List<Advisor> ADVISORS = Collections.synchronizedList(new ArrayList<>());
-
-    public static ClassLoader CLASS_LOADER;
     public static Instrumentation inst;
+
     // 这里在java agent下可能有问题
 //    static {
 //        init(null);
@@ -65,6 +67,7 @@ public final class Context {
             ADVISORS.remove(first.get());
         }
     }
+
 
 
     @SneakyThrows
