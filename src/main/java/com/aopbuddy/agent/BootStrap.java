@@ -5,9 +5,11 @@ import com.aopbuddy.aspect.MethodPointcut;
 import com.aopbuddy.retransform.Context;
 import com.aopbuddy.servlet.ClassloaderServlet;
 import com.aopbuddy.servlet.EvalServlet;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.instrument.Instrumentation;
 
+@Slf4j
 public class BootStrap {
     public static void start(String args, Instrumentation instrumentation) {
         try {
@@ -23,7 +25,7 @@ public class BootStrap {
                     .addAction("/eval", new EvalServlet())
                     .start();
         } catch (Throwable e) {
-            System.out.println(e.getMessage());
+            log.error("error",e);
             throw new RuntimeException(e);
         }
 

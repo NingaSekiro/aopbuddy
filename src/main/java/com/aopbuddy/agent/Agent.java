@@ -12,20 +12,25 @@ import java.net.URL;
 
 
 public class Agent {
+
+    private static volatile AopAgentLoader aopAgentLoader = null;
+
     public static void agentmain(String agent, Instrumentation instrumentation) {
         startEarthBootstrap(agent, instrumentation);
     }
 
 
     private static void startEarthBootstrap(String args, Instrumentation instrumentation) {
-
+        if (aopAgentLoader != null) {
+            return;
+        }
         File classFile = new File(Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath());
         File file = new File(classFile.getParent(), "/aopbuddy-1.0-jar-with-dependencies.jar");
         if (!file.exists()) {
             throw new IllegalStateException("找不到文件:" + file);
         } else {
             try {
-                AopAgentLoader aopAgentLoader = new AopAgentLoader(new URL[]{file.toURI().toURL()});
+                aopAgentLoader = new AopAgentLoader(new URL[]{file.toURI().toURL()});
                 Class<?> aClass = aopAgentLoader.loadClass("com.aopbuddy.agent.BootStrap", true);
                 Method premain = aClass.getDeclaredMethod("start", String.class, Instrumentation.class);
                 premain.invoke(aClass, args, instrumentation);
