@@ -20,12 +20,12 @@ public class BootStrap {
             Context.registerAdvisor(pointcut, exampleListener);
             System.out.println("agentmain" + pointcut);
             System.out.println("agentmain" + exampleListener);
-            HttpUtil.createServer(8888)
+            HttpUtil.createServer(args != null ? Integer.parseInt(args) : 8888)
                     .addAction("/classloader", new ClassloaderServlet())
                     .addAction("/eval", new EvalServlet())
                     .start();
         } catch (Throwable e) {
-            log.error("error",e);
+            log.error("error", e);
             throw new RuntimeException(e);
         }
 

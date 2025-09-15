@@ -6,6 +6,7 @@
 package com.aopbuddy.groovy;
 
 import cn.hutool.json.JSONUtil;
+import com.aopbuddy.vmtool.ClassUtil;
 import com.aopbuddy.vmtool.VmToolCommand;
 import groovy.lang.Script;
 
@@ -15,23 +16,27 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 public abstract class ConsoleScript extends Script {
+
+    public Object[] get(Class<?> cla) {
+        return this.get(cla, 10);
+    }
+
+
+    public Object getObject(Class<?> cla) {
+        Object[] obj = this.get(cla, 10);
+        return obj != null && obj.length > 0 ? obj[0] : obj;
+    }
 
     public Object[] get(Class<?> cla, Integer limit) {
         limit = limit == null ? 10 : limit;
         return VmToolCommand.vmToolInstance().getInstances(cla, limit);
     }
 
-    public Object[] get(Class<?> cla) {
-        return this.get(cla, 10);
-    }
-
-    public Object getObject(Class<?> cla) {
-        Object[] obj = this.get(cla, 10);
-        return obj != null && obj.length > 0 ? obj[0] : obj;
-    }
 
     public String toJson(Object value) {
         return JSONUtil.toJsonStr(value);

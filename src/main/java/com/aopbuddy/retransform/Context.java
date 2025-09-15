@@ -69,7 +69,6 @@ public final class Context {
     }
 
 
-
     @SneakyThrows
     private static void weave() {
         Class[] allLoadedClasses = inst.getAllLoadedClasses();
@@ -89,7 +88,7 @@ public final class Context {
         TypeDescription typeDescription = TypeDescription.ForLoadedType.of(clz);
         return ElementMatchers.not(
                         getDefaultIgnore()
-                                .or(ElementMatchers.isSynthetic().or(TypeDescription::isAnonymousType)
+                                .or(ElementMatchers.isSynthetic()
                                 ))
                 .and(new TypeElementMatcher())
                 .matches(typeDescription);

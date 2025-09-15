@@ -42,7 +42,7 @@ public class EvalServlet implements Action {
             Object result = groovyShell.evaluate(evalRequest.getScript());
 
             // 将结果写入响应
-            httpServerResponse.write(result != null ? result.toString() : "null");
+            httpServerResponse.write(result != null ? JSONUtil.toJsonStr(result) : "null");
 
         } catch (Exception e) {
             log.error("Groovy evaluation error", e);
