@@ -18,7 +18,7 @@ public class Attacher {
             VirtualMachineDescriptor jvm = list.get(i);
             String lowerCase = jvm.displayName().toLowerCase(Locale.ROOT);
             System.out.println("[" + i + "]ID:" + jvm.id() + ",Name:" + jvm.displayName());
-            if (lowerCase.contains("spring")||lowerCase.contains("catalina")) {
+            if (lowerCase.contains("spring") || lowerCase.contains("catalina")) {
                 s = i;
             }
         }
@@ -29,7 +29,7 @@ public class Attacher {
         System.out.println(file.getAbsolutePath());
         System.out.println(file.exists());
         try {
-            attach.loadAgent(file.getAbsolutePath(), "param");
+            attach.loadAgent(file.getAbsolutePath());
         } finally {
             attach.detach();
         }

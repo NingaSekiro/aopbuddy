@@ -56,13 +56,12 @@ public class MethodPointcut extends Pointcut {
     }
 
     @Override
-    public boolean matches(ClassObject clz) {
-        return PointcutParser.of(this).isClass(clz.getName());
+    public boolean matchesClassName(String className) {
+        return PointcutParser.of(this).isClass(className);
     }
 
     @Override
     public boolean matches(MethodObject method) {
-
         if (!PointcutParser.of(this).isMethodName(method.getName())) {
             return false;
         }
@@ -71,7 +70,6 @@ public class MethodPointcut extends Pointcut {
         if (descriptor.startsWith("(..)")) {
             return true;
         }
-
         return is(method.getDescriptor(), descriptor);
     }
 

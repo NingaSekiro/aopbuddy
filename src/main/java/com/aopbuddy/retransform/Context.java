@@ -1,17 +1,12 @@
 package com.aopbuddy.retransform;
 
-import com.aopbuddy.aspect.ClassObject;
 import com.aopbuddy.infrastructure.TypeElementMatcher;
-import groovy.lang.GroovyClassLoader;
-import lombok.Setter;
 import lombok.SneakyThrows;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 import net.bytebuddy.matcher.ElementMatchers;
-import org.codehaus.groovy.reflection.SunClassLoader;
-import org.codehaus.groovy.runtime.callsite.CallSiteClassLoader;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
@@ -41,21 +36,24 @@ public final class Context {
                     .Default()
                     .disableClassFormatChanges()
 //                重新 inject 了同一个类
+                    .with(new DebugAgentListener())
                     .ignore(getDefaultIgnore())
                     .type(ElementMatchers.not((ElementMatchers.isSynthetic())
                             .or(TypeDescription::isAnonymousType)
                     ).and(new TypeElementMatcher()))
                     .transform(new PointcutTransformer())
                     .makeRaw();
-            TransformerController.buddyTransformer = buddyTransformer2;
-            inst.addTransformer(TransformerController.buddyTransformer, true);
+            AbstractWeaver proxyWeaver = new AbstractWeaver();
+            proxyWeaver.setTargetTransformer(buddyTransformer2);
+            TransformerController.buddyTransformer = proxyWeaver;
+            inst.addTransformer(proxyWeaver, true);
         }
     }
 
 
     public static void registerAdvisor(Pointcut pointcut, Listener listener) {
         ADVISORS.add(new Advisor(pointcut, listener));
-        weave();
+        weave(pointcut);
     }
 
     public static void unregisterAdvisor(Pointcut pointcut, Class<? extends Listener> listenerClass) {
@@ -70,10 +68,10 @@ public final class Context {
 
 
     @SneakyThrows
-    private static void weave() {
+    private static void weave(Pointcut pointcut) {
         Class[] allLoadedClasses = inst.getAllLoadedClasses();
         List<Class> classes = Arrays.stream(allLoadedClasses)
-                .filter(clz -> filter(clz)).collect(Collectors.toList());
+                .filter(clz -> pointcut.matchesClassName(clz.getName())).collect(Collectors.toList());
         System.out.println("weave classes: " + classes);
         System.out.println("weave advisors" + ADVISORS);
         if (classes.isEmpty()) {
@@ -84,14 +82,13 @@ public final class Context {
     }
 
 
-    public static boolean filter(Class<?> clz) {
-        TypeDescription typeDescription = TypeDescription.ForLoadedType.of(clz);
-        return ElementMatchers.not(
-                        getDefaultIgnore()
-                                .or(ElementMatchers.isSynthetic()
-                                ))
-                .and(new TypeElementMatcher())
-                .matches(typeDescription);
+    public static boolean matchesClass(String className) {
+        for (Advisor advisor : ADVISORS) {
+            if (advisor.getPointcut().matchesClassName(className)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

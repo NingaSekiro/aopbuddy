@@ -6,6 +6,9 @@
 package com.aopbuddy.groovy;
 
 import cn.hutool.json.JSONUtil;
+import com.aopbuddy.agent.ExampleListener;
+import com.aopbuddy.aspect.MethodPointcut;
+import com.aopbuddy.retransform.Context;
 import com.aopbuddy.vmtool.ClassUtil;
 import com.aopbuddy.vmtool.VmToolCommand;
 import groovy.lang.Script;
@@ -35,6 +38,13 @@ public abstract class ConsoleScript extends Script {
     public Object[] get(Class<?> cla, Integer limit) {
         limit = limit == null ? 10 : limit;
         return VmToolCommand.vmToolInstance().getInstances(cla, limit);
+    }
+
+    public String addListener(String className, String methodName) {
+        MethodPointcut pointcut = MethodPointcut.of(
+                className, methodName, "(..)");
+        Context.registerAdvisor(pointcut, new ExampleListener());
+        return "ok";
     }
 
 

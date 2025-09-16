@@ -1,6 +1,5 @@
 package com.aopbuddy.retransform;
 
-import com.aopbuddy.aspect.ClassObject;
 import com.aopbuddy.aspect.MethodObject;
 import lombok.Getter;
 
@@ -28,7 +27,7 @@ public abstract class Pointcut {
         return Objects.hash(expression);
     }
 
-    public abstract boolean matches(ClassObject clz);
+    public abstract boolean matchesClassName(String className);
 
     public abstract boolean matches(MethodObject method);
 }

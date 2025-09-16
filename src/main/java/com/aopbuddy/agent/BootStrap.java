@@ -17,7 +17,7 @@ public class BootStrap {
             MethodPointcut pointcut = MethodPointcut.of(
                     "com.myth.earth.rmi.server.ConsoleRemoteServer", "*", "(..)");
             ExampleListener exampleListener = new ExampleListener();
-            Context.registerAdvisor(pointcut, exampleListener);
+//            Context.registerAdvisor(pointcut, exampleListener);
             System.out.println("agentmain" + pointcut);
             System.out.println("agentmain" + exampleListener);
             HttpUtil.createServer(args != null ? Integer.parseInt(args) : 8888)
