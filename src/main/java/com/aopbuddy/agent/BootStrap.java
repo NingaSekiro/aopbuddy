@@ -5,12 +5,14 @@ import com.aopbuddy.aspect.MethodPointcut;
 import com.aopbuddy.retransform.Context;
 import com.aopbuddy.servlet.ClassloaderServlet;
 import com.aopbuddy.servlet.EvalServlet;
-import lombok.extern.slf4j.Slf4j;
 
 import java.lang.instrument.Instrumentation;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-@Slf4j
 public class BootStrap {
+    private static final Logger LOGGER = Logger.getLogger(BootStrap.class.getName());
+
     public static void start(String args, Instrumentation instrumentation) {
         try {
             Context.init(instrumentation);
@@ -25,7 +27,8 @@ public class BootStrap {
                     .addAction("/eval", new EvalServlet())
                     .start();
         } catch (Throwable e) {
-            log.error("error", e);
+            LOGGER.log(Level.WARNING
+                    , "BootStrap ERROR ", e);
             throw new RuntimeException(e);
         }
 

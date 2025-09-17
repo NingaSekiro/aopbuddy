@@ -1,8 +1,6 @@
 package com.aopbuddy.infrastructure;
 
 
-import aj.org.objectweb.asm.Type;
-
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -41,9 +39,6 @@ public class MethodSignature {
         return className + POUND + methodSignature.toString();
     }
 
-    public MethodSignature(Method method) {
-        this(method.getName(), Type.getMethodDescriptor(method));
-    }
 
     public String getName() {
         return name;
@@ -53,13 +48,6 @@ public class MethodSignature {
         return descriptor;
     }
 
-    public Type getReturnType() {
-        return Type.getReturnType(descriptor);
-    }
-
-    public Type[] getArgumentTypes() {
-        return Type.getArgumentTypes(descriptor);
-    }
 
     @Override
     public String toString() {

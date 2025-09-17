@@ -17,13 +17,16 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import java.io.IOException;
 import java.security.CodeSource;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-@Slf4j
 public class EvalServlet implements Action {
+    private static final Logger LOGGER = Logger.getLogger(EvalServlet.class.getName());
+
     @Override
     public void doAction(HttpServerRequest httpServerRequest, HttpServerResponse httpServerResponse) {
         EvalRequest evalRequest = JSONUtil.toBean(httpServerRequest.getBody(), EvalRequest.class);
-        log.info("evalRequest: {}", evalRequest);
+        LOGGER.info("evalRequest: " + evalRequest);
         Binding binding = new Binding();
         try {
             // 关键修改：使用GroovyClassLoader而不是Web应用类加载器
@@ -45,7 +48,8 @@ public class EvalServlet implements Action {
             httpServerResponse.write(result != null ? JSONUtil.toJsonStr(result) : "null");
 
         } catch (Exception e) {
-            log.error("Groovy evaluation error", e);
+            LOGGER.log(Level.WARNING
+                    , "EvalServlet ERROR ", e);
             httpServerResponse.write("Error: " + e.getMessage());
         }
     }

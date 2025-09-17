@@ -36,14 +36,6 @@ public class MethodPointcut extends Pointcut {
         return methodSignature;
     }
 
-    /*
-    public PointcutParser getParser(){
-        return PointcutParser.of(this);
-    }
-     */
-    public static MethodPointcut of(Method method) {
-        return new MethodPointcut(method.getDeclaringClass().getName(), new MethodSignature(method));
-    }
 
     public static MethodPointcut of(String className, String methodName, String methodDesc) {
         return new MethodPointcut(className, new MethodSignature(methodName, methodDesc));
