@@ -2,7 +2,6 @@ package com.aopbuddy.aspect;
 
 
 import com.aopbuddy.infrastructure.MethodSignature;
-import com.aopbuddy.retransform.Pointcut;
 
 import java.lang.reflect.Method;
 
@@ -61,16 +60,11 @@ public class MethodPointcut extends Pointcut {
     }
 
     @Override
-    public boolean matches(MethodObject method) {
-        if (!PointcutParser.of(this).isMethodName(method.getName())) {
+    public boolean matchesMethodName(String methodName) {
+        if (!PointcutParser.of(this).isMethodName(methodName)) {
             return false;
         }
-
-        String descriptor = methodSignature.getDescriptor();
-        if (descriptor.startsWith("(..)")) {
-            return true;
-        }
-        return is(method.getDescriptor(), descriptor);
+        return true;
     }
 
     public static boolean is(String descriptor1, String descriptor2) {

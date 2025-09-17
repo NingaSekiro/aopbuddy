@@ -2,6 +2,7 @@ package com.aopbuddy.retransform;
 
 
 import com.aopbuddy.aspect.MethodObject;
+import com.aopbuddy.aspect.Pointcut;
 import lombok.SneakyThrows;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
@@ -35,10 +36,9 @@ public class PointcutTransformer implements AgentBuilder.Transformer {
                                 )))
                 );
         for (MethodDescription.InDefinedShape methodDescription : methods) {
-            Method method = ((MethodDescription.ForLoadedMethod) methodDescription).getLoadedMethod();
             for (Pointcut pointcut : pointcuts) {
-                if (pointcut.matches(new MethodObject.ForMethod(method))) {
-                    System.out.println("pointcut matched" + method.getName() + pointcut.hashCode());
+                if (pointcut.matchesMethodName(methodDescription.getActualName())) {
+                    System.out.println("pointcut matched" + methodDescription.getActualName() + pointcut.hashCode());
                     builder = event(builder, methodDescription);
                     break;
                 }

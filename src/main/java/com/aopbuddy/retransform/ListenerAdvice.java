@@ -34,7 +34,7 @@ public class ListenerAdvice {
         System.out.println("[ListenerAdvice] onEnter " + className + "." + methodName + " desc=" + methodDesc);
         List<Listener> listeners = new ArrayList<>();
         for (Advisor advisor : Context.ADVISORS) {
-            if (advisor.getPointcut().matches(new MethodObject.ForMethod(method))) {
+            if (advisor.getPointcut().matchesMethodName(methodName)) {
                 listeners.add(advisor.getListener());
             }
         }
@@ -59,7 +59,7 @@ public class ListenerAdvice {
                               @Advice.Thrown Throwable thrown) {
         List<Listener> listeners = new ArrayList<>();
         for (Advisor advisor : Context.ADVISORS) {
-            if (advisor.getPointcut().matches(new MethodObject.ForMethod(method))) {
+            if (advisor.getPointcut().matchesMethodName(methodName)) {
                 listeners.add(advisor.getListener());
             }
         }
