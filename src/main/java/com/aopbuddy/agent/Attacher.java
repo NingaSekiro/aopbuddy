@@ -25,7 +25,7 @@ public class Attacher {
         VirtualMachineDescriptor virtualMachineDescriptor = list.get(s);
         VirtualMachine attach = VirtualMachine.attach(virtualMachineDescriptor.id());
         File classFile = new File(Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-        File file = new File(classFile.getParent(), "/aopbuddy-1.0-jar-with-dependencies.jar");
+        File file = new File(classFile.getParent(), "/agent-jar-with-dependencies.jar");
         System.out.println(file.getAbsolutePath());
         System.out.println(file.exists());
         try {
