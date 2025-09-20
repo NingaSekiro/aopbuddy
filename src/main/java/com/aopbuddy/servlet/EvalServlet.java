@@ -7,6 +7,7 @@ import cn.hutool.json.JSONUtil;
 import com.aopbuddy.groovy.ConsoleScript;
 import com.aopbuddy.groovy.EvalRequest;
 import com.aopbuddy.groovy.GroovyConsoleLoader;
+import com.aopbuddy.infrastructure.LoggerFactory;
 import com.aopbuddy.vmtool.ClassUtil;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
@@ -21,7 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class EvalServlet implements Action {
-    private static final Logger LOGGER = Logger.getLogger(EvalServlet.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(EvalServlet.class.getName(), LoggerFactory.LogFile.WEB);
 
     @Override
     public void doAction(HttpServerRequest httpServerRequest, HttpServerResponse httpServerResponse) {

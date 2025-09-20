@@ -1,5 +1,6 @@
 package com.aopbuddy.retransform;
 
+import com.aopbuddy.infrastructure.LoggerFactory;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
@@ -13,7 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DebugAgentListener implements AgentBuilder.Listener {
-    private static final Logger LOGGER = Logger.getLogger("DebugAgentListener");
+    private static final Logger LOGGER = LoggerFactory.getLogger("DebugAgentListener");
 
     public static final String DEBUG_LOCATION_PROPERTY = "easy-aop.debugLocation";
 

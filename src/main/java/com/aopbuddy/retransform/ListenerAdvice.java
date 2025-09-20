@@ -1,6 +1,7 @@
 package com.aopbuddy.retransform;
 
 import com.aopbuddy.aspect.MethodObject;
+import com.aopbuddy.infrastructure.LoggerFactory;
 import com.aopbuddy.infrastructure.MockedReturnValue;
 import lombok.SneakyThrows;
 import net.bytebuddy.asm.Advice;
@@ -10,6 +11,7 @@ import net.bytebuddy.jar.asm.Type;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 
 /**
@@ -20,7 +22,7 @@ import java.util.List;
  * - @Advice.Origin("#t") / "#m" 用于获取类名和方法名
  */
 public class ListenerAdvice {
-
+    public static final Logger LOGGER = LoggerFactory.getLogger(ListenerAdvice.class.getName());
 
     @SneakyThrows
     @Advice.OnMethodEnter
@@ -31,7 +33,7 @@ public class ListenerAdvice {
                                @Advice.Origin("#s") String signature,
                                @Advice.Origin Method method,
                                @Advice.AllArguments Object[] args) {
-        System.out.println("[ListenerAdvice] onEnter " + className + "." + methodName + " desc=" + methodDesc);
+        LOGGER.info("[ListenerAdvice] onEnter " + className + "." + methodName + " desc=" + methodDesc);
         List<Listener> listeners = new ArrayList<>();
         for (Advisor advisor : Context.ADVISORS) {
             if (advisor.getPointcut().matchesMethodName(methodName)) {
@@ -39,7 +41,7 @@ public class ListenerAdvice {
             }
         }
         if (listeners.isEmpty()) {
-            System.out.println("no listener");
+            LOGGER.info("no listener");
             return;
         }
         // attempt to resolve Method by signature (AgentBridge knows parameter type names)
@@ -70,7 +72,7 @@ public class ListenerAdvice {
             }
         } else {
             for (Listener l : listeners) {
-                System.out.println("onExit" + l);
+                LOGGER.info("onExit" + l);
                 MockedReturnValue after = l.after(thiz, method, args, returned);
                 if (after != null && after.isMock()) {
                     returned = after.getMockValue();

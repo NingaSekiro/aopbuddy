@@ -1,5 +1,6 @@
 package com.aopbuddy.retransform;
 
+import com.aopbuddy.infrastructure.LoggerFactory;
 import net.bytebuddy.jar.asm.Opcodes;
 
 import java.lang.instrument.ClassFileTransformer;
@@ -10,7 +11,7 @@ import java.util.logging.Logger;
 
 // 在byte-buddy动态加载类前加一层过滤。
 public class AbstractWeaver implements ClassFileTransformer {
-    public static final Logger LOGGER = Logger.getLogger("AbstractWeaver");
+    public static final Logger LOGGER = LoggerFactory.getLogger("AbstractWeaver");
 
     private volatile ClassFileTransformer targetTransformer;
 

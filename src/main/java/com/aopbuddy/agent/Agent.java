@@ -29,17 +29,18 @@ public class Agent {
         if (!file.exists()) {
             throw new IllegalStateException("找不到文件:" + file);
         } else {
-            try {
-                aopAgentLoader = new AopAgentLoader(new URL[]{file.toURI().toURL()});
-                Class<?> aClass = aopAgentLoader.loadClass("com.aopbuddy.agent.BootStrap", true);
-                Method premain = aClass.getDeclaredMethod("start", String.class, Instrumentation.class);
-                premain.invoke(aClass, args, instrumentation);
-            } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException |
-                     IllegalAccessException |
-                     MalformedURLException var6) {
-                Exception e = var6;
-                throw new IllegalArgumentException(e);
-            }
+            BootStrap.start(args, instrumentation);
+//            try {
+//                aopAgentLoader = new AopAgentLoader(new URL[]{file.toURI().toURL()});
+//                Class<?> aClass = aopAgentLoader.loadClass("com.aopbuddy.agent.BootStrap", true);
+//                Method premain = aClass.getDeclaredMethod("start", String.class, Instrumentation.class);
+//                premain.invoke(aClass, args, instrumentation);
+//            } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException |
+//                     IllegalAccessException |
+//                     MalformedURLException var6) {
+//                Exception e = var6;
+//                throw new IllegalArgumentException(e);
+//            }
         }
     }
 

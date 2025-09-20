@@ -18,7 +18,7 @@ public class Attacher {
             VirtualMachineDescriptor jvm = list.get(i);
             String lowerCase = jvm.displayName().toLowerCase(Locale.ROOT);
             System.out.println("[" + i + "]ID:" + jvm.id() + ",Name:" + jvm.displayName());
-            if (lowerCase.contains("spring") || lowerCase.contains("catalina")) {
+            if (lowerCase.contains("spring") || lowerCase.contains("catalina")|| lowerCase.contains("demo")) {
                 s = i;
             }
         }

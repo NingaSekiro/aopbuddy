@@ -3,6 +3,7 @@ package com.aopbuddy.retransform;
 
 import com.aopbuddy.aspect.MethodObject;
 import com.aopbuddy.aspect.Pointcut;
+import com.aopbuddy.infrastructure.LoggerFactory;
 import lombok.SneakyThrows;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
@@ -16,13 +17,15 @@ import net.bytebuddy.utility.JavaModule;
 import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class PointcutTransformer implements AgentBuilder.Transformer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PointcutTransformer.class.getName());
+
     @SneakyThrows
     @Override
     public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule module, ProtectionDomain protectionDomain) {
-        System.out.println("startstartstartstartstart");
         List<Advisor> advisors = Context.ADVISORS;
         List<Pointcut> pointcuts = advisors.stream().map(advisor -> advisor.getPointcut()).filter(pointcut -> pointcut.matchesClassName(typeDescription.getName())).
                 collect(Collectors.toList());
@@ -38,7 +41,7 @@ public class PointcutTransformer implements AgentBuilder.Transformer {
         for (MethodDescription.InDefinedShape methodDescription : methods) {
             for (Pointcut pointcut : pointcuts) {
                 if (pointcut.matchesMethodName(methodDescription.getActualName())) {
-                    System.out.println("pointcut matched" + methodDescription.getActualName() + pointcut.hashCode());
+                    LOGGER.info("pointcut matched" + methodDescription.getActualName() + pointcut.hashCode());
                     builder = event(builder, methodDescription);
                     break;
                 }

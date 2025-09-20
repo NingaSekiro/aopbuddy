@@ -1,9 +1,8 @@
 package com.aopbuddy.retransform;
 
-import com.aopbuddy.agent.ExampleListener;
+import com.aopbuddy.agent.MethodListener;
 import com.aopbuddy.aspect.MethodPointcut;
 import com.aopbuddytest.TargetService;
-import net.bytebuddy.agent.ByteBuddyAgent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +20,7 @@ public class TestMain {
         TargetService svc = new TargetService();
         MethodPointcut pointcut = MethodPointcut.of(
                 "com.aopbuddytest.TargetService", "greet", "(..)");
-        Listener listener = new ExampleListener();
+        Listener listener = new MethodListener();
         Context.registerAdvisor(pointcut, listener);
         String again = svc.greet("again");
         assertEquals("mocked", again);

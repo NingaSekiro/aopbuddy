@@ -1,6 +1,7 @@
 package com.aopbuddy.retransform;
 
 import com.aopbuddy.aspect.Pointcut;
+import com.aopbuddy.infrastructure.LoggerFactory;
 import com.aopbuddy.infrastructure.TypeElementMatcher;
 import lombok.SneakyThrows;
 import net.bytebuddy.agent.ByteBuddyAgent;
@@ -13,9 +14,12 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public final class Context {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Context.class.getName());
     public static final List<Advisor> ADVISORS = Collections.synchronizedList(new ArrayList<>());
     public static Instrumentation inst;
 
@@ -73,10 +77,10 @@ public final class Context {
         Class[] allLoadedClasses = inst.getAllLoadedClasses();
         List<Class> classes = Arrays.stream(allLoadedClasses)
                 .filter(clz -> pointcut.matchesClassName(clz.getName())).collect(Collectors.toList());
-        System.out.println("weave classes: " + classes);
-        System.out.println("weave advisors" + ADVISORS);
+        LOGGER.info("weave classes: " + classes);
+        LOGGER.info("weave advisors" + ADVISORS);
         if (classes.isEmpty()) {
-            System.out.println("empty poincut");
+            LOGGER.info("empty poincut");
             return;
         }
         inst.retransformClasses(classes.toArray(new Class[0]));
