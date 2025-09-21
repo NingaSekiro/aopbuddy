@@ -1,6 +1,5 @@
 package com.aopbuddy.infrastructure;
 
-import com.aopbuddy.agent.MethodListener;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
@@ -14,7 +13,6 @@ import java.util.logging.*;
 import static com.aopbuddy.infrastructure.LoggerFactory.LogFile.LISTEN;
 
 public class LoggerFactory {
-    public static Logger LOGGER;
 
 
     public enum LogFile {
@@ -45,9 +43,6 @@ public class LoggerFactory {
                 throw new RuntimeException("初始化日志处理器失败: " + logFile.fileName, e);
             }
         }
-        LOGGER = Logger.getLogger(MethodListener.class.getName());
-        LOGGER.setUseParentHandlers(false);
-        LOGGER.addHandler(handlers.get(LISTEN));
     }
 
     /**

@@ -1,38 +1,50 @@
 package com.aopbuddy.agent;
 
+import com.aopbuddy.infrastructure.ProcessUtils;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
-import org.apache.groovy.parser.antlr4.util.StringUtils;
 
 import java.io.File;
-import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
+import java.util.InputMismatchException;
+
 
 public class Attacher {
+    //TODO:: 1.适配远程 2.适配jps 3.适配listener日志 4.适配插件后台线程
 
     public static void main(String[] args) throws Exception {
-        List<VirtualMachineDescriptor> list = VirtualMachine.list();
-        int s = -1;
-        for (int i = 0; i < list.size(); i++) {
-            VirtualMachineDescriptor jvm = list.get(i);
-            String lowerCase = jvm.displayName().toLowerCase(Locale.ROOT);
-            System.out.println("[" + i + "]ID:" + jvm.id() + ",Name:" + jvm.displayName());
-            if (lowerCase.contains("spring") || lowerCase.contains("catalina")|| lowerCase.contains("demo")) {
-                s = i;
+        long pid = -1;
+        // select pid
+        try {
+            pid = ProcessUtils.select();
+        } catch (InputMismatchException e) {
+            System.out.println("Please input an integer to select pid.");
+            System.exit(1);
+        }
+        if (pid < 0) {
+            System.out.println("Please select an available pid.");
+            System.exit(1);
+        }
+        boolean ready = ProcessUtils.addToolsJarToClasspath();
+        if (!ready) {
+            System.out.println("Can not find tools.jar, please make sure you are using a JDK instead of a JRE.");
+            System.exit(1);
+        }
+        VirtualMachineDescriptor virtualMachineDescriptor = null;
+        for (VirtualMachineDescriptor descriptor : VirtualMachine.list()) {
+            String id = descriptor.id();
+            if (id.equals(Long.toString(pid))) {
+                virtualMachineDescriptor = descriptor;
+                break;
             }
         }
-        VirtualMachineDescriptor virtualMachineDescriptor = list.get(s);
         VirtualMachine attach = VirtualMachine.attach(virtualMachineDescriptor.id());
         File classFile = new File(Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath());
         File file = new File(classFile.getParent(), "/agent-jar-with-dependencies.jar");
-        System.out.println(file.getAbsolutePath());
-        System.out.println(file.exists());
         try {
             attach.loadAgent(file.getAbsolutePath());
         } finally {
             attach.detach();
         }
+        System.out.println("finish");
     }
-//
 }

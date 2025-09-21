@@ -12,20 +12,21 @@ import java.util.logging.Logger;
 import static com.aopbuddy.infrastructure.LoggerFactory.LogFile.LISTEN;
 
 public class MethodListener implements Listener {
+    public static Logger LOGGER = LoggerFactory.getLogger(MethodListener.class.getName(), LISTEN);
 
     @Override
     public void before(Object target, Method method, Object[] args) {
-        LoggerFactory.LOGGER.info("[Listener] aaabefore " + method + " target=" + target + " args=" + JSONUtil.toJsonStr(args));
+        LOGGER.info("[Listener] aaabefore " + method + " target=" + target + " args=" + JSONUtil.toJsonStr(args));
     }
 
     @Override
     public MockedReturnValue after(Object target, Method method, Object[] args, Object returnValue) {
-        LoggerFactory.LOGGER.info("[Listener] after " + method + " target=" + target + " args=" + JSONUtil.toJsonStr(args) + " ret=" + returnValue);
+        LOGGER.info("[Listener] after " + method + " target=" + target + " args=" + JSONUtil.toJsonStr(args) + " ret=" + returnValue);
         return new MockedReturnValue(false, "noMock");
     }
 
     @Override
     public void onException(Object target, Method method, Object[] args, Throwable throwable) {
-        LoggerFactory.LOGGER.log(Level.SEVERE, "Method exception: " + method + " args=" + JSONUtil.toJsonStr(args), throwable);
+        LOGGER.log(Level.SEVERE, "Method exception: " + method + " args=" + JSONUtil.toJsonStr(args), throwable);
     }
 }

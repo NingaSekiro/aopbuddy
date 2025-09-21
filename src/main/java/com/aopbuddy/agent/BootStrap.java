@@ -21,7 +21,7 @@ public class BootStrap {
             Context.init(instrumentation);
             File classFile = new File(Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath());
             File file = new File(classFile.getParent(), "/agent-jar-with-dependencies.jar");
-            instrumentation.appendToSystemClassLoaderSearch(new JarFile(file));
+//            instrumentation.appendToSystemClassLoaderSearch(new JarFile(file));
             MethodPointcut pointcut = MethodPointcut.of(
                     "com.example.demo.controller.DemoController", "test", "(..)");
             MethodListener methodListener = new MethodListener();
