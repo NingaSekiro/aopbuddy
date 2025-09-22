@@ -10,8 +10,6 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.logging.*;
 
-import static com.aopbuddy.infrastructure.LoggerFactory.LogFile.LISTEN;
-
 public class LoggerFactory {
 
 

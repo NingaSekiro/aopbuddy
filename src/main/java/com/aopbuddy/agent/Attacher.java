@@ -9,9 +9,13 @@ import java.util.InputMismatchException;
 
 
 public class Attacher {
-    //TODO:: 1.适配远程 2.适配jps 3.适配listener日志 4.适配插件后台线程
+    //TODO:: 1.适配远程（完成） 2.适配jps(完成）3.适配listener日志（仿照arthas，日期淘汰，调用一次） 4.适配插件后台线程（完成）5.考虑异常处理6.考虑自带tools.jar 7.考虑定时清理ServerConfig
 
     public static void main(String[] args) throws Exception {
+        String httpPort = "8888";
+        if (args != null && args.length != 0) {
+            httpPort = args[0];
+        }
         long pid = -1;
         // select pid
         try {
@@ -41,7 +45,7 @@ public class Attacher {
         File classFile = new File(Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath());
         File file = new File(classFile.getParent(), "/agent-jar-with-dependencies.jar");
         try {
-            attach.loadAgent(file.getAbsolutePath());
+            attach.loadAgent(file.getAbsolutePath(), httpPort);
         } finally {
             attach.detach();
         }
