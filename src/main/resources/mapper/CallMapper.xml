@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aopbuddy.mapper.CallRecordMapper">
+    <resultMap id="BaseResultMap" type="com.aopbuddy.mapper.CallRecordDo">
+        <!--@mbg.generated-->
+        <!--@Table CallRecord-->
+        <result column="ID" jdbcType="BIGINT" property="id"/>
+        <result column="CALL_ID" jdbcType="BIGINT" property="callId"/>
+        <result column="OBJECT_VIEW" jdbcType="VARCHAR" property="objectView"/>
+        <result column="METHOD" jdbcType="VARCHAR" property="method"/>
+        <result column="TIMESTAMP" jdbcType="TIMESTAMP" property="timestamp"/>
+    </resultMap>
+    <insert id="insertBatchCallRecords" parameterType="list">
+        INSERT INTO CallRecord (call_id,method,OBJECT_VIEW)
+        VALUES
+        <foreach collection="list" item="record" separator=",">
+            (#{record.callId},#{record.method}, #{record.objectView})
+        </foreach>
+    </insert>
+
+    <select id="selectByIdGreaterThan" parameterType="long" resultMap="BaseResultMap">
+        SELECT id,
+               call_id,
+               method,
+               object_view,
+               timestamp
+        FROM CallRecord
+        WHERE id > #{id}
+    </select>
+
+    <select id="selectByMethods" parameterType="list" resultMap="BaseResultMap">
+        SELECT id,
+        call_id,
+        method,
+        object_view,
+        timestamp
+        FROM CallRecord
+        WHERE method IN
+        <foreach collection="methods" item="method" open="(" separator="," close=")">
+            #{method}
+        </foreach>
+    </select>
+
+    <delete id="clearAllRecords">
+        TRUNCATE TABLE CallRecord
+    </delete>
+</mapper>

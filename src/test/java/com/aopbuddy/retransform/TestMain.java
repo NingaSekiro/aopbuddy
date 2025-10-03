@@ -17,6 +17,7 @@ public class TestMain {
 
     @Test
     public void addMethodPointcut() {
+        Context.init(null);
         TargetService svc = new TargetService();
         MethodPointcut pointcut = MethodPointcut.of(
                 "com.aopbuddytest.TargetService", "greet", "(..)");
@@ -25,4 +26,5 @@ public class TestMain {
         String again = svc.greet("again");
         assertEquals("mocked", again);
     }
+
 }

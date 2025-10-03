@@ -1,7 +1,9 @@
 package com.aopbuddy.infrastructure;
 
+import com.aopbuddy.vmtool.VmToolCommand;
 import com.taobao.arthas.common.AnsiLog;
 import com.taobao.arthas.common.ExecutingCommand;
+import com.taobao.arthas.common.OSUtils;
 import com.taobao.arthas.common.PidUtils;
 
 import java.io.File;
@@ -9,6 +11,9 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 
@@ -57,6 +62,20 @@ public class ProcessUtils {
         return -1;
     }
 
+
+    public static String getToolsClasspath() {
+        if (OSUtils.isLinux()) {
+            return "tools-1.jar";
+        } else if (OSUtils.isWindows()) {
+            return "tools-2.jar";
+        } else if (OSUtils.isMac()) {
+            return "tools-3.jar";
+        } else {
+            return "tools-1.jar";
+        }
+    }
+
+
     public static boolean addToolsJarToClasspath() {
         // 1. 获取JAVA_HOME环境变量
         String javaHome = System.getenv("JAVA_HOME");
@@ -73,19 +92,19 @@ public class ProcessUtils {
             // maybe jre
             toolsJar = new File(javaHome, "../../lib/tools.jar");
         }
-
-        // 3. 检查是否已在类路径中
         try {
-            // 尝试加载tools.jar中的标志性类
-            Class.forName("com.sun.tools.javac.Main");
-            return true;
-        } catch (ClassNotFoundException e) {
-            // 未加载，需要动态添加
-        }
-
-        // 4. 动态添加到类路径（通过反射调用URLClassLoader的addURL方法）
-        try {
-            URL toolsJarUrl = toolsJar.toURI().toURL();
+            URL toolsJarUrl;
+            if (!toolsJar.exists()) {
+//                如果资源在 JAR 文件中：jar:file:/path/to/your-app.jar!/lib/tools.jar（嵌套 JAR URL）,不满足要求。
+//                toolsJarUrl = VmToolCommand.class.getResource("/lib/" + getToolsClasspath());
+                Path tempFile = Files.createTempFile("ToolsJar", null);
+                Files.copy(Objects.requireNonNull(VmToolCommand.class.getResourceAsStream("/lib/" + getToolsClasspath())), tempFile, StandardCopyOption.REPLACE_EXISTING);
+                tempFile.toFile().deleteOnExit();
+                toolsJarUrl = tempFile.toUri().toURL();
+            } else {
+                toolsJarUrl = toolsJar.toURI().toURL();
+            }
+            System.out.println("add tools.jar to classpath: " + toolsJarUrl);
             URLClassLoader classLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
             Method addUrlMethod = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
             addUrlMethod.setAccessible(true);

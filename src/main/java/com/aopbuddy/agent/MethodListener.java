@@ -22,7 +22,7 @@ public class MethodListener implements Listener {
     @Override
     public MockedReturnValue after(Object target, Method method, Object[] args, Object returnValue) {
         LOGGER.info("[Listener] after " + method + " target=" + target + " args=" + JSONUtil.toJsonStr(args) + " ret=" + returnValue);
-        return new MockedReturnValue(false, "noMock");
+        return new MockedReturnValue(true, "mocked");
     }
 
     @Override

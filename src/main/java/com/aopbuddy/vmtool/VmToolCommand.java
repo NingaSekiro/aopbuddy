@@ -1,22 +1,16 @@
 package com.aopbuddy.vmtool;
 
 import arthas.VmTool;
-import com.taobao.arthas.common.IOUtils;
 import com.taobao.arthas.common.VmToolUtils;
-import lombok.extern.slf4j.Slf4j;
 
-
-import java.io.*;
-import java.lang.instrument.Instrumentation;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.FileAttribute;
-import java.security.CodeSource;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Objects;
 
 
 public class VmToolCommand {
