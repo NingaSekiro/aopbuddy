@@ -11,5 +11,5 @@ public class ByteBuddyCallTracer {
     // 调用链上下文，用于记录方法调用链，一次方法链调用完后会清空
     public static  ThreadLocal<CallChain> CALL_CHAIN_CONTEXT = ThreadLocal.withInitial(CallChain::new);
 
-    public static AtomicInteger count = new AtomicInteger(0);
+    public static AtomicInteger CHAIN_CNT = new AtomicInteger(0);
 }

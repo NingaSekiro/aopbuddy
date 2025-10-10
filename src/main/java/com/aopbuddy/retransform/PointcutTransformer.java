@@ -1,7 +1,6 @@
 package com.aopbuddy.retransform;
 
 
-import com.aopbuddy.aspect.MethodObject;
 import com.aopbuddy.aspect.Pointcut;
 import com.aopbuddy.infrastructure.LoggerFactory;
 import lombok.SneakyThrows;
@@ -14,7 +13,6 @@ import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.utility.JavaModule;
 
-import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 import java.util.List;
 import java.util.logging.Logger;

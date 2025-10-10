@@ -3,7 +3,7 @@ package com.aopbuddy.servlet;
 import cn.hutool.http.server.HttpServerRequest;
 import cn.hutool.http.server.HttpServerResponse;
 import cn.hutool.http.server.action.Action;
-import cn.hutool.json.JSONUtil;
+import com.aopbuddy.infrastructure.JsonUtil;
 import com.aopbuddy.vmtool.ClassUtil;
 
 import java.io.IOException;
@@ -14,6 +14,8 @@ public class ClassloaderServlet implements Action {
     @Override
     public void doAction(HttpServerRequest httpServerRequest, HttpServerResponse httpServerResponse) throws IOException {
         List<String> classloaderNames = ClassUtil.getClassLoaders().stream().map(classLoader -> classLoader.getClass().getName()).collect(Collectors.toList());
-        httpServerResponse.write(JSONUtil.toJsonStr(classloaderNames));
+        httpServerResponse.write(JsonUtil.toJson(classloaderNames));
+        httpServerResponse.getWriter().flush();
+        httpServerResponse.getWriter().close();
     }
 }

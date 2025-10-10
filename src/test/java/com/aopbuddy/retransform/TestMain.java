@@ -27,4 +27,19 @@ public class TestMain {
         assertEquals("mocked", again);
     }
 
+    @Test
+    public void deleteMethodPointcut() {
+        Context.init(null);
+        TargetService svc = new TargetService();
+        MethodPointcut pointcut = MethodPointcut.of(
+                "com.aopbuddytest.TargetService", "greet", "(..)");
+        Listener listener = new MethodListener();
+        Context.registerAdvisor(pointcut, listener);
+        String again = svc.greet("again");
+        assertEquals("mocked", again);
+        Context.unregisterAdvisor(pointcut, MethodListener.class);
+        again = svc.greet("again");
+        assertEquals("Num 1", again);
+    }
+
 }

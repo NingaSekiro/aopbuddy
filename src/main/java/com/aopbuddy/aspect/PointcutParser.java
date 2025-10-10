@@ -12,7 +12,6 @@ public class PointcutParser {
 
 
     public PointcutParser(String className, String methodName, String methodDesc) {
-
         classPattern = Pattern.compile(getClassRegex(className));
         methodNamePattern = Pattern.compile(getMethodRegex(methodName));
     }

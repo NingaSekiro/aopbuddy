@@ -60,6 +60,11 @@ public class ObjectView implements View {
         }
     }
 
+    public static String getDrawString(Object object, Integer deep) {
+        ObjectView objectView = new ObjectView(object, deep, MAX_OBJECT_LENGTH);
+        return objectView.draw();
+    }
+
     private final static String TAB = "    ";
 
     private final static Map<Byte, String> ASCII_MAP = new HashMap<Byte, String>();

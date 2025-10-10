@@ -1,12 +1,10 @@
 package com.aopbuddy.agent;
 
-import cn.hutool.core.lang.Singleton;
+import com.aopbuddy.aspect.MethodPointcut;
 import com.aopbuddy.infrastructure.MockedReturnValue;
-import com.aopbuddy.mapper.BaseDao;
-import com.aopbuddy.mapper.CallRecordDo;
-import com.aopbuddy.mapper.CallRecordMapper;
-import com.aopbuddy.record.ByteBuddyCallTracer;
-import com.aopbuddy.record.CallRecord;
+import com.aopbuddy.record.*;
+import com.aopbuddy.retransform.Advisor;
+import com.aopbuddy.retransform.Context;
 import com.aopbuddy.retransform.Listener;
 
 import java.lang.reflect.Method;
@@ -30,6 +28,17 @@ public class TraceListener implements Listener {
 
     @Override
     public MockedReturnValue after(Object target, Method method, Object[] args, Object returnValue) {
+        extracted(method, returnValue);
+        return new MockedReturnValue(false, null);
+    }
+
+
+    @Override
+    public void onException(Object target, Method method, Object[] args, Throwable throwable) {
+        extracted(method, throwable);
+    }
+
+    private static void extracted(Method method, Object returnValue) {
         Stack<CallRecord> callRecords = CALL_CONTEXT.get();
         callRecords.pop();
         // CALL_CONTEXT,设置返回值
@@ -37,27 +46,37 @@ public class TraceListener implements Listener {
         List<CallRecord> callRecords1 = CALL_CHAIN_CONTEXT.get().getCallRecords();
         callRecords1.add(callRecord);
         if (callRecords.isEmpty()) {
+            MethodPointcut methodPointcut = getMethodPointcut();
+            MethodChainKey methodChainKey = new MethodChainKey();
+            methodChainKey.setStartMethodName(method.toString());
+            for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
+                if (methodPointcut.matchesClassName(stackTraceElement.getClassName())) {
+                    methodChainKey.getLineNums().add(stackTraceElement.getLineNumber());
+                }
+            }
             // 当前调用链结束，保存调用链
-            int andIncrement = ByteBuddyCallTracer.count.getAndIncrement();
+            int andIncrement = ByteBuddyCallTracer.CHAIN_CNT.getAndIncrement();
             for (CallRecord record : callRecords1) {
                 record.setCallChainId(andIncrement);
             }
-            List<CallRecordDo> collect = callRecords1.stream().map(CallRecordDo::toCallRecordDo).collect(Collectors.toList());
-            BaseDao baseDao = Singleton.get(BaseDao.class);
-            baseDao.execute(CallRecordMapper.class, mapper -> {
-                mapper.insertBatchCallRecords(collect);
-                return null;
-            });
+            CallChainDo callChainDo = new CallChainDo();
+            callChainDo.setCallRecords(callRecords1.stream().map(CallRecordDo::toCallRecordDo).collect(Collectors.toList()));
+            callChainDo.setTime(System.currentTimeMillis());
+            CaffeineCache.getCache().asMap().computeIfAbsent(methodChainKey, k -> new MethodChain());
+            CaffeineCache.get(methodChainKey).getCallRecordDos().offer(callChainDo);
             // 重置调用链上下文
             CALL_CONTEXT.remove();
             CALL_CHAIN_CONTEXT.remove();
         }
-        return new MockedReturnValue(false, null);
     }
 
-    @Override
-    public void onException(Object target, Method method, Object[] args, Throwable throwable) {
-        // 异常处理逻辑
+    private static MethodPointcut getMethodPointcut() {
+        List<Advisor> advisors = Context.ADVISORS;
+        for (Advisor advisor : advisors) {
+            if (advisor.getListener() instanceof TraceListener) {
+                return (MethodPointcut) advisor.getPointcut();
+            }
+        }
+        return null;
     }
-
 }

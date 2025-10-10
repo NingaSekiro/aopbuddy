@@ -1,9 +1,10 @@
 package com.aopbuddy.infrastructure;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONWriter;
-
-import java.util.List;
+import com.aopbuddy.record.MethodChainKey;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public class JsonUtil {
 
@@ -24,20 +25,62 @@ public class JsonUtil {
 //        return JSONUtil.toList(json, clazz);
 //    }
 
+//    public static String toJson(Object obj) {
+//        return JSON.toJSONString(obj, JSONWriter.Feature.FieldBased);
+//    }
+//
+//    public static String toJson(Object... obj) {
+//        return JSON.toJSONString(obj);
+//    }
+//
+//
+//    public static <T> T parse(String json, Class<T> clazz) {
+//        return JSON.parseObject(json, clazz);
+//    }
+//
+//    public static <T> List<T> parseArray(String json, Class<T> clazz) {
+//        return JSON.parseArray(json, clazz);
+//    }
+
+
+    public static final ObjectMapper objectMapper = new ObjectMapper();
+    static {
+        SimpleModule module = new SimpleModule();
+        module.addKeyDeserializer(MethodChainKey.class, new MethodChainKeyDeserializer());
+        objectMapper.registerModule(module);;
+    }
+
     public static String toJson(Object obj) {
-        return JSON.toJSONString(obj, JSONWriter.Feature.FieldBased);
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static String toJson(Object... obj) {
-        return JSON.toJSONString(obj);
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
     public static <T> T parse(String json, Class<T> clazz) {
-        return JSON.parseObject(json, clazz);
+        try {
+            return objectMapper.readValue(json, clazz);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public static <T> List<T> parseArray(String json, Class<T> clazz) {
-        return JSON.parseArray(json, clazz);
+    public static <T> T parse(String json, TypeReference<T> typeReference) {
+        try {
+            return objectMapper.readValue(json, typeReference);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
+
 }

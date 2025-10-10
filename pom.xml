@@ -32,14 +32,19 @@
             <version>5.8.25</version>
         </dependency>
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>1.4.200</version>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>2.9.3</version>
         </dependency>
         <dependency>
-            <groupId>org.mybatis</groupId>
-            <artifactId>mybatis</artifactId>
-            <version>3.5.16</version> <!-- 使用最新版本 -->
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.11.1</version>
         </dependency>
         <dependency>
             <groupId>com.taobao.arthas</groupId>
@@ -67,12 +72,7 @@
         <!--            <artifactId>logback-classic</artifactId>-->
         <!--            <version>1.2.3</version>-->
         <!--        </dependency>-->
-<!--        fastjson-->
-        <dependency>
-            <groupId>com.alibaba.fastjson2</groupId>
-            <artifactId>fastjson2</artifactId>
-            <version>2.0.53</version>
-        </dependency>
+        <!--        fastjson-->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -91,9 +91,19 @@
             <version>${lombok.version}</version>
             <scope>provided</scope>
         </dependency>
+        <!--        tools.jar-->
+        <dependency>
+            <groupId>com.sun</groupId>
+            <artifactId>tools</artifactId>
+            <version>1.8</version>
+            <scope>system</scope>
+            <systemPath>${JAVA_HOME}/lib/tools.jar</systemPath>
+        </dependency>
+
     </dependencies>
 
     <build>
+        <finalName>agent-jar-with-dependencies</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -107,7 +117,9 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <finalName>agent-jar-with-dependencies</finalName>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <shadedClassifierName/>
+                            <!--                            <finalName>agent-jar-with-dependencies</finalName>-->
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">

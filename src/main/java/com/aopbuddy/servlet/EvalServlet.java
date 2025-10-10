@@ -3,20 +3,16 @@ package com.aopbuddy.servlet;
 import cn.hutool.http.server.HttpServerRequest;
 import cn.hutool.http.server.HttpServerResponse;
 import cn.hutool.http.server.action.Action;
-import cn.hutool.json.JSONUtil;
 import com.aopbuddy.groovy.ConsoleScript;
 import com.aopbuddy.groovy.EvalRequest;
 import com.aopbuddy.groovy.GroovyConsoleLoader;
+import com.aopbuddy.infrastructure.JsonUtil;
 import com.aopbuddy.infrastructure.LoggerFactory;
 import com.aopbuddy.vmtool.ClassUtil;
 import groovy.lang.Binding;
-import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
-import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
-import java.io.IOException;
-import java.security.CodeSource;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,7 +22,7 @@ public class EvalServlet implements Action {
 
     @Override
     public void doAction(HttpServerRequest httpServerRequest, HttpServerResponse httpServerResponse) {
-        EvalRequest evalRequest = JSONUtil.toBean(httpServerRequest.getBody(), EvalRequest.class);
+        EvalRequest evalRequest = JsonUtil.parse(httpServerRequest.getBody(), EvalRequest.class);
         LOGGER.info("evalRequest: " + evalRequest);
         Binding binding = new Binding();
         try {
@@ -46,8 +42,7 @@ public class EvalServlet implements Action {
             Object result = groovyShell.evaluate(evalRequest.getScript());
 
             // 将结果写入响应
-            httpServerResponse.write(result != null ? JSONUtil.toJsonStr(result) : "null");
-
+            httpServerResponse.write(result != null ? JsonUtil.toJson(result) : "null");
         } catch (Exception e) {
             LOGGER.log(Level.WARNING
                     , "EvalServlet ERROR ", e);

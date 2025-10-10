@@ -1,6 +1,6 @@
 package com.aopbuddy.agent;
 
-import cn.hutool.json.JSONUtil;
+import com.aopbuddy.infrastructure.JsonUtil;
 import com.aopbuddy.infrastructure.LoggerFactory;
 import com.aopbuddy.infrastructure.MockedReturnValue;
 import com.aopbuddy.retransform.Listener;
@@ -16,17 +16,17 @@ public class MethodListener implements Listener {
 
     @Override
     public void before(Object target, Method method, Object[] args) {
-        LOGGER.info("[Listener] aaabefore " + method + " target=" + target + " args=" + JSONUtil.toJsonStr(args));
+        LOGGER.info("[Listener] aaabefore " + method + " target=" + target + " args=" + JsonUtil.toJson(args));
     }
 
     @Override
     public MockedReturnValue after(Object target, Method method, Object[] args, Object returnValue) {
-        LOGGER.info("[Listener] after " + method + " target=" + target + " args=" + JSONUtil.toJsonStr(args) + " ret=" + returnValue);
+        LOGGER.info("[Listener] after " + method + " target=" + target + " args=" + JsonUtil.toJson(args) + " ret=" + returnValue);
         return new MockedReturnValue(true, "mocked");
     }
 
     @Override
     public void onException(Object target, Method method, Object[] args, Throwable throwable) {
-        LOGGER.log(Level.SEVERE, "Method exception: " + method + " args=" + JSONUtil.toJsonStr(args), throwable);
+        LOGGER.log(Level.SEVERE, "Method exception: " + method + " args=" + JsonUtil.toJson(args), throwable);
     }
 }
