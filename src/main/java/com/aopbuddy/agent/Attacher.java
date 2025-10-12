@@ -8,16 +8,12 @@ import java.util.InputMismatchException;
 
 
 public class Attacher {
-    //TODO:: 1.适配远程（完成） 2.适配jps(完成）3.适配listener日志（仿照arthas，日期淘汰，调用一次） 4.适配插件后台线程（完成）5.考虑异常处理6.考虑自带tools.jar 7.考虑定时清理ServerConfig
     /*
     * 1. 适配远程（完成）
     *  2. 适配jps(完成）
-    * 3. 适配listener日志（仿照arthas，日期淘汰，调用一次）
     * 4. 适配插件后台线程（完成）
     * 5. 考虑异常处理
     * 6. 考虑自带tools.jar(完成）
-    * 7. 考虑定时清理ServerConfig
-    * 8.0 考虑H2数据库同步
     */
 
     public static void main(String[] args) throws Exception {

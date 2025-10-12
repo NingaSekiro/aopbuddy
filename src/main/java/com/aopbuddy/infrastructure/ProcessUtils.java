@@ -79,22 +79,20 @@ public class ProcessUtils {
     public static boolean addToolsJarToClasspath() {
         // 1. 获取JAVA_HOME环境变量
         String javaHome = System.getenv("JAVA_HOME");
-        if (javaHome == null) {
-            System.err.println("no JAVA_HOME");
-            return false;
-        }
-
-        File toolsJar = new File(javaHome, "lib/tools.jar");
-        if (!toolsJar.exists()) {
-            toolsJar = new File(javaHome, "../lib/tools.jar");
-        }
-        if (!toolsJar.exists()) {
-            // maybe jre
-            toolsJar = new File(javaHome, "../../lib/tools.jar");
+        File toolsJar = null;
+        if (javaHome != null) {
+            toolsJar = new File(javaHome, "lib/tools.jar");
+            if (!toolsJar.exists()) {
+                toolsJar = new File(javaHome, "../lib/tools.jar");
+            }
+            if (!toolsJar.exists()) {
+                // maybe jre
+                toolsJar = new File(javaHome, "../../lib/tools.jar");
+            }
         }
         try {
             URL toolsJarUrl;
-            if (!toolsJar.exists()) {
+            if (toolsJar == null || !toolsJar.exists()) {
 //                如果资源在 JAR 文件中：jar:file:/path/to/your-app.jar!/lib/tools.jar（嵌套 JAR URL）,不满足要求。
 //                toolsJarUrl = VmToolCommand.class.getResource("/lib/" + getToolsClasspath());
                 Path tempFile = Files.createTempFile("ToolsJar", null);
