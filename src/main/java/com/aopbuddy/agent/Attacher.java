@@ -14,6 +14,11 @@ public class Attacher {
     * 4. 适配插件后台线程（完成）
     * 5. 考虑异常处理
     * 6. 考虑自带tools.jar(完成）
+    * 7.前台的拉动条
+    * 8.考虑多个listener匹配到的情况
+    * 切换页面是录制状态不变
+    * 录制前检查是否连上agent
+    * 前端页面关闭时再打开的情况(关闭也要停止录制）
     */
 
     public static void main(String[] args) throws Exception {

@@ -41,7 +41,7 @@ public class ListenerAdvice {
         LOGGER.info("[ListenerAdvice] onEnter " + className + "." + methodName + " desc=" + methodDesc);
         List<Listener> listeners = new ArrayList<>();
         for (Advisor advisor : Context.ADVISORS) {
-            if (ReflectMethodChecker.isGetter(method) || ReflectMethodChecker.isSetter(method)) {
+            if (ReflectMethodChecker.isGetter(method) || ReflectMethodChecker.isSetter(method) || !advisor.getPointcut().matchesClassName(className)) {
                 continue;
             }
             if (!BLACK_METHOD_NAMES.contains(methodName) && advisor.getPointcut().matchesMethodName(methodName)) {
@@ -65,7 +65,7 @@ public class ListenerAdvice {
                               @Advice.Thrown Throwable thrown) {
         List<Listener> listeners = new ArrayList<>();
         for (Advisor advisor : Context.ADVISORS) {
-            if (ReflectMethodChecker.isGetter(method) || ReflectMethodChecker.isSetter(method)) {
+            if (ReflectMethodChecker.isGetter(method) || ReflectMethodChecker.isSetter(method) || !advisor.getPointcut().matchesClassName(className)) {
                 continue;
             }
             if (!BLACK_METHOD_NAMES.contains(methodName) &&  advisor.getPointcut().matchesMethodName(methodName)) {
