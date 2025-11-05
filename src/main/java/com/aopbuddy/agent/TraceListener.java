@@ -59,6 +59,8 @@ public class TraceListener implements Listener {
             for (CallRecord record : callRecords1) {
                 record.setCallChainId(andIncrement);
             }
+            // 设置线程名
+            callRecords1.get(0).setThreadName(Thread.currentThread().getName());
             CallChainDo callChainDo = new CallChainDo();
             callChainDo.setCallRecords(callRecords1.stream().map(CallRecordDo::toCallRecordDo).collect(Collectors.toList()));
             callChainDo.setTime(System.currentTimeMillis());

@@ -18,6 +18,7 @@ public class CallRecordDo {
     private String returnValue;
     private String target;
     private Timestamp timestamp;
+    private String threadName;
 
     public static CallRecordDo toCallRecordDo(CallRecord callRecord) {
         CallRecordDo callRecordDo = new CallRecordDo();
@@ -26,6 +27,7 @@ public class CallRecordDo {
         callRecordDo.setArgs(ObjectView.getDrawString(callRecord.getArgs(), 2));
         callRecordDo.setReturnValue(ObjectView.getDrawString(callRecord.getReturnValue(), 2));
         callRecordDo.setTarget(ObjectView.getDrawString(callRecord.getTarget(), 2));
+        callRecordDo.setThreadName(callRecord.getThreadName());
         return callRecordDo;
     }
 

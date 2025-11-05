@@ -20,4 +20,5 @@ public class CallRecord {
     private Object[] args;
     private Object returnValue;
     private Throwable exception;
+    private String threadName;
 }
