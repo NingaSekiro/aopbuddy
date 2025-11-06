@@ -21,7 +21,6 @@ import java.util.logging.Logger;
  * - @Advice.Origin("#t") / "#m" 用于获取类名和方法名
  */
 public class ListenerAdvice {
-    public static final Logger LOGGER = LoggerFactory.getLogger(ListenerAdvice.class.getName());
 
     public static final Set<String> BLACK_METHOD_NAMES = Collections.unmodifiableSet(new HashSet<String>() {{
         add("equals");
@@ -38,7 +37,6 @@ public class ListenerAdvice {
                                @Advice.Origin("#s") String signature,
                                @Advice.Origin Method method,
                                @Advice.AllArguments Object[] args) {
-        LOGGER.info("[ListenerAdvice] onEnter " + className + "." + methodName + " desc=" + methodDesc);
         List<Listener> listeners = new ArrayList<>();
         for (Advisor advisor : Context.ADVISORS) {
             if (ReflectMethodChecker.isGetter(method) || ReflectMethodChecker.isSetter(method) || !advisor.getPointcut().matchesClassName(className)) {
@@ -79,7 +77,6 @@ public class ListenerAdvice {
             }
         } else {
             for (Listener l : listeners) {
-                LOGGER.info("onExit" + l);
                 MockedReturnValue after = l.after(thiz, method, args, returned);
                 if (after != null && after.isMock()) {
                     returned = after.getMockValue();

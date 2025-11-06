@@ -32,6 +32,6 @@ public class CallRecordDo {
     }
 
     public static boolean isInboundCall(CallRecordDo callRecordDo) {
-        return callRecordDo.getArgs() != null;
+        return callRecordDo.getArgs() != null && !callRecordDo.getArgs().equals("null");
     }
 }
