@@ -29,6 +29,7 @@ public class CallRecordDo {
         callRecordDo.setReturnValue(ObjectView.getDrawString(callRecord.getReturnValue(), 2));
         callRecordDo.setTarget(ObjectView.getDrawString(callRecord.getTarget(), 2));
         callRecordDo.setThreadName(callRecord.getThreadName());
+        callRecordDo.setMessage(callRecord.getMessage());
         return callRecordDo;
     }
 

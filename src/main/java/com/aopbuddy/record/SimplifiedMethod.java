@@ -27,4 +27,8 @@ public class SimplifiedMethod {
     public String getMethodName() {
         return methodName;
     }
+
+    public String toString() {
+        return returnSimpleClassName + " " + simpleTargetClassName + " " + methodName;
+    }
 }

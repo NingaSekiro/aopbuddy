@@ -86,7 +86,6 @@ public class MethodChainKey {
         key.setStartMethodName(callRecords.get(0).getMethod());
         // 提取调用链中的方法序列（只提取入参记录，因为出参记录的方法名与入参相同）
         List<String> methodSignatures = new ArrayList<>();
-        String startMethod = null;
         for (int i = 0; i < Math.min(10, callRecords.size()); i++) {
             if (callRecords.get(i).getArgs() == null) {
                 continue;

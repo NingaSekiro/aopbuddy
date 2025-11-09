@@ -26,6 +26,8 @@ public class Attacher {
      * weave日志和录制数据可以简化(weave日志已去除，录制数据可以删除static字段）
      * 能否反向定位对象数据流向
      * 类加载器还是需要试验
+     * 没有形参名称
+     * groovy调用问题
      */
 
     public static void main(String[] args) throws Exception {
