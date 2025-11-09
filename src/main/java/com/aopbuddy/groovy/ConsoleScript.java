@@ -86,10 +86,8 @@ public abstract class ConsoleScript extends Script {
         return "record successful";
     }
 
-    public String deleteListener(String className, String methodName) {
-        MethodPointcut pointcut = MethodPointcut.of(
-                className, methodName, "(..)");
-        Context.unregisterAdvisor(pointcut, TraceListener.class);
+    public String deleteListener() {
+        Context.unregisterAdvisorByListener(TraceListener.class);
         CaffeineCache.getCache().invalidateAll();
         return "cancel record successful";
     }

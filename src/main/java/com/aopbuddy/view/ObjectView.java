@@ -6,6 +6,7 @@ import com.taobao.arthas.common.ArthasConstants;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -599,12 +600,13 @@ public class ObjectView implements View {
                         fields.addAll(Arrays.asList(objClass.getDeclaredFields()));
                         objClass = objClass.getSuperclass();
                     }
-
-
-                    for (Field field : fields) {
-
-                        field.setAccessible(true);
-
+                    final List<Field> filteredFields = fields.stream()
+                            .filter(field -> !Modifier.isStatic(field.getModifiers()))     // 排除静态字段
+                            .filter(field -> !Modifier.isTransient(field.getModifiers())) // 排除瞬态字段
+                            .filter(field -> !field.isSynthetic())                        // 排除合成字段
+                            .peek(field -> field.setAccessible(true))                     // 设置可访问
+                            .collect(java.util.stream.Collectors.toList());
+                    for (Field field : filteredFields) {
                         try {
 
                             final Object value = field.get(obj);

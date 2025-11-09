@@ -3,7 +3,6 @@ package com.aopbuddy.retransform;
 import com.aopbuddy.agent.TraceListener;
 import com.aopbuddy.aspect.MethodPointcut;
 import com.aopbuddy.infrastructure.JsonUtil;
-import com.aopbuddy.infrastructure.MethodChainUtil;
 import com.aopbuddy.record.CaffeineCache;
 import com.aopbuddy.record.MethodChain;
 import com.aopbuddy.record.MethodChainKey;
@@ -21,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.aopbuddy.record.ByteBuddyCallTracer.CALL_CHAIN_CONTEXT;
 import static com.aopbuddy.record.ByteBuddyCallTracer.CALL_CONTEXT;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestH2 {
 
@@ -46,13 +45,18 @@ public class TestH2 {
         svc.greet(model);
 
         int size = CaffeineCache.getCache().asMap().size();
-        MethodChainKey methodChainKey = new MethodChainKey();
-        methodChainKey.setStartMethodName("public com.aopbuddytest.Model com.aopbuddytest.TargetService.greet(com.aopbuddytest.Model)");
-        methodChainKey.getLineNums().add(18);
-        MethodChain methodChain = CaffeineCache.get(methodChainKey);
-        int size1 = methodChain.getCallRecordDos().size();
-        Map<MethodChainKey, MethodChain> collect = MethodChainUtil.filterTime(CaffeineCache.getCache().asMap(), 0);
+        // 由于 MethodChainKey 现在由系统自动构造，需要从缓存中获取实际的 key
+        Map<MethodChainKey, MethodChain> cacheMap = CaffeineCache.getCache().asMap();
         assertEquals(1, size);
+        // 验证缓存中有数据
+        assertEquals(1, cacheMap.size());
+        // 获取第一个 key（应该是自动生成的）
+        MethodChainKey methodChainKey = cacheMap.keySet().iterator().next();
+        // 验证入口方法名正确
+        assertEquals("public com.aopbuddytest.Model com.aopbuddytest.TargetService.greet(com.aopbuddytest.Model)", 
+                     methodChainKey.getStartMethodName());
+        MethodChain methodChain = CaffeineCache.get(methodChainKey);
+        assertNotNull(methodChain);
         assertEquals(0, CALL_CONTEXT.get().size());
         assertEquals(0, CALL_CHAIN_CONTEXT.get().getCallRecords().size());
     }
@@ -81,15 +85,22 @@ public class TestH2 {
         executor.shutdown();
         executor.awaitTermination(5, TimeUnit.SECONDS);
 
-        MethodChainKey methodChainKey = new MethodChainKey();
-        methodChainKey.setStartMethodName("public com.aopbuddytest.Model com.aopbuddytest.TargetService.greet(com.aopbuddytest.Model)");
-        methodChainKey.getLineNums().add(18);
+        // 由于 MethodChainKey 现在由系统自动构造，需要从缓存中获取实际的 key
+        Map<MethodChainKey, MethodChain> cacheMap = CaffeineCache.getCache().asMap();
+        // 获取第一个 key（应该是自动生成的）
+        MethodChainKey methodChainKey = cacheMap.keySet().iterator().next();
+        // 验证入口方法名正确
+        assertEquals("public com.aopbuddytest.Model com.aopbuddytest.TargetService.greet(com.aopbuddytest.Model)", 
+                     methodChainKey.getStartMethodName());
         MethodChain methodChain = CaffeineCache.get(methodChainKey);
+        assertNotNull(methodChain);
         int size1 = methodChain.getCallRecordDos().size();
+        assertEquals(8, size1);
+        // 测试 JSON 序列化和反序列化
         String json = JsonUtil.toJson(CaffeineCache.getCache().asMap());
         Map<MethodChainKey, MethodChain> map = JsonUtil.parse(json, new TypeReference<Map<MethodChainKey, MethodChain>>() {
         });
-        assertEquals(8, size1);
+        assertNotNull(map);
         assertEquals(0, CALL_CONTEXT.get().size());
         assertEquals(0, CALL_CHAIN_CONTEXT.get().getCallRecords().size());
     }

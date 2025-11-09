@@ -46,14 +46,7 @@ public class TraceListener implements Listener {
         List<CallRecord> callRecords1 = CALL_CHAIN_CONTEXT.get().getCallRecords();
         callRecords1.add(callRecord);
         if (callRecords.isEmpty()) {
-            MethodPointcut methodPointcut = getMethodPointcut();
-            MethodChainKey methodChainKey = new MethodChainKey();
-            methodChainKey.setStartMethodName(method.toString());
-            for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
-                if (methodPointcut.matchesClassName(stackTraceElement.getClassName())) {
-                    methodChainKey.getLineNums().add(stackTraceElement.getLineNumber());
-                }
-            }
+            MethodChainKey methodChainKey = MethodChainKey.buildMethodChainKey(callRecords1);
             // 当前调用链结束，保存调用链
             int andIncrement = ByteBuddyCallTracer.CHAIN_CNT.getAndIncrement();
             for (CallRecord record : callRecords1) {
@@ -72,6 +65,8 @@ public class TraceListener implements Listener {
         }
     }
 
+
+    
     private static MethodPointcut getMethodPointcut() {
         List<Advisor> advisors = Context.ADVISORS;
         for (Advisor advisor : advisors) {

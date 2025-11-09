@@ -57,6 +57,13 @@ public final class Context {
 
 
     public static void registerAdvisor(Pointcut pointcut, Listener listener) {
+        Optional<Advisor> first = ADVISORS.stream()
+                .filter(advisor -> advisor.getPointcut().equals(pointcut))
+                .filter(advisor -> advisor.getListener().getClass().equals(listener.getClass()))
+                .findFirst();
+        if (first.isPresent()) {
+            return;
+        }
         ADVISORS.add(new Advisor(pointcut, listener));
         weave(pointcut);
     }
@@ -69,6 +76,10 @@ public final class Context {
         if (first.isPresent()) {
             ADVISORS.remove(first.get());
         }
+    }
+
+    public static void unregisterAdvisorByListener(Class<? extends Listener> listenerClass) {
+        ADVISORS.removeIf(advisor -> advisor.getListener().getClass().equals(listenerClass));
     }
 
 

@@ -1,6 +1,5 @@
 package com.aopbuddy.retransform;
 
-import com.aopbuddy.infrastructure.LoggerFactory;
 import com.aopbuddy.infrastructure.MockedReturnValue;
 import com.aopbuddy.infrastructure.ReflectMethodChecker;
 import lombok.SneakyThrows;
@@ -10,7 +9,6 @@ import net.bytebuddy.jar.asm.Type;
 
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.logging.Logger;
 
 
 /**
@@ -30,13 +28,13 @@ public class ListenerAdvice {
 
     @SneakyThrows
     @Advice.OnMethodEnter
-    public static void onEnter(@Advice.This(optional = true) Object thiz,
-                               @Advice.Origin("#t") String className,
-                               @Advice.Origin("#m") String methodName,
-                               @Advice.Origin("#d") String methodDesc,
-                               @Advice.Origin("#s") String signature,
-                               @Advice.Origin Method method,
-                               @Advice.AllArguments Object[] args) {
+    public static EnterResult onEnter(@Advice.This(optional = true) Object thiz,
+                                      @Advice.Origin("#t") String className,
+                                      @Advice.Origin("#m") String methodName,
+                                      @Advice.Origin("#d") String methodDesc,
+                                      @Advice.Origin("#s") String signature,
+                                      @Advice.Origin Method method,
+                                      @Advice.AllArguments Object[] args) {
         List<Listener> listeners = new ArrayList<>();
         for (Advisor advisor : Context.ADVISORS) {
             if (ReflectMethodChecker.isGetter(method) || ReflectMethodChecker.isSetter(method) || !advisor.getPointcut().matchesClassName(className)) {
@@ -50,6 +48,9 @@ public class ListenerAdvice {
         for (Listener l : listeners) {
             l.before(thiz, method, args);
         }
+        EnterResult enterResult = new EnterResult();
+        enterResult.setListeners(listeners);
+        return enterResult;
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
@@ -60,17 +61,9 @@ public class ListenerAdvice {
                               @Advice.Origin Method method,
                               @Advice.AllArguments Object[] args,
                               @Advice.Return(typing = Assigner.Typing.DYNAMIC, readOnly = false) Object returned,
-                              @Advice.Thrown Throwable thrown) {
-        List<Listener> listeners = new ArrayList<>();
-        for (Advisor advisor : Context.ADVISORS) {
-            if (ReflectMethodChecker.isGetter(method) || ReflectMethodChecker.isSetter(method) || !advisor.getPointcut().matchesClassName(className)) {
-                continue;
-            }
-            if (!BLACK_METHOD_NAMES.contains(methodName) &&  advisor.getPointcut().matchesMethodName(methodName)) {
-                listeners.add(advisor.getListener());
-            }
-        }
-        if (listeners.isEmpty()) return;
+                              @Advice.Thrown Throwable thrown,
+                              @Advice.Enter EnterResult enterResult) {
+        List<Listener> listeners = enterResult.getListeners();
         if (thrown != null) {
             for (Listener l : listeners) {
                 l.onException(thiz, method, args, thrown);

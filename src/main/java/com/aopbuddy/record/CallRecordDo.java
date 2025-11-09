@@ -19,6 +19,7 @@ public class CallRecordDo {
     private String target;
     private Timestamp timestamp;
     private String threadName;
+    private String message;
 
     public static CallRecordDo toCallRecordDo(CallRecord callRecord) {
         CallRecordDo callRecordDo = new CallRecordDo();
