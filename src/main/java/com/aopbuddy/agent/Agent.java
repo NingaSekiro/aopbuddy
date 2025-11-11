@@ -22,13 +22,8 @@ public class Agent {
         if (start != null) {
             return;
         }
-        File classFile = new File(Agent.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-        File file = new File(classFile.getParent(), "/agent-jar-with-dependencies.jar");
-        if (!file.exists()) {
-            throw new IllegalStateException("找不到文件:" + file);
-        } else {
-            BootStrap.start(args, instrumentation);
-            start = "started";
+        BootStrap.start(args, instrumentation);
+        start = "started";
 //            try {
 //                aopAgentLoader = new AopAgentLoader(new URL[]{file.toURI().toURL()});
 //                Class<?> aClass = aopAgentLoader.loadClass("com.aopbuddy.agent.BootStrap", true);
@@ -41,6 +36,5 @@ public class Agent {
 //                throw new IllegalArgumentException(e);
 //            }
         }
-    }
 
 }

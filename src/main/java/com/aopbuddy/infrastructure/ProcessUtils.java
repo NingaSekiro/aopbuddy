@@ -1,10 +1,7 @@
 package com.aopbuddy.infrastructure;
 
 import com.aopbuddy.vmtool.VmToolCommand;
-import com.taobao.arthas.common.AnsiLog;
-import com.taobao.arthas.common.ExecutingCommand;
-import com.taobao.arthas.common.OSUtils;
-import com.taobao.arthas.common.PidUtils;
+import com.taobao.arthas.common.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,6 +74,9 @@ public class ProcessUtils {
 
 
     public static boolean addToolsJarToClasspath() {
+        if (JavaVersionUtils.isGreaterThanJava8()) {
+            return true;
+        }
         // 1. 获取JAVA_HOME环境变量
         String javaHome = System.getenv("JAVA_HOME");
         File toolsJar = null;
