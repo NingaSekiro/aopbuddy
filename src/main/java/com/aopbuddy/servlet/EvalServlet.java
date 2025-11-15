@@ -9,6 +9,8 @@ import com.aopbuddy.infrastructure.JsonUtil;
 import com.aopbuddy.infrastructure.LoggerFactory;
 import groovy.lang.GroovyShell;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,10 +29,15 @@ public class EvalServlet implements Action {
 
             // 将结果写入响应
             httpServerResponse.write(result != null ? JsonUtil.toJson(result) : "null");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.log(Level.WARNING
                     , "EvalServlet ERROR ", e);
-            httpServerResponse.write("Error: " + e.getMessage());
+            StringWriter sw = new StringWriter(1024);
+            PrintWriter pw = new PrintWriter(sw);
+            pw.println(String.format("Error: %s: %s", e.getClass().getName(), String.valueOf(e.getMessage())));
+            e.printStackTrace(pw);
+            pw.flush();
+            httpServerResponse.write(sw.toString());
         }
     }
 }

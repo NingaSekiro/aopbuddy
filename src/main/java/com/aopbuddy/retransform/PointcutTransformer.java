@@ -39,7 +39,6 @@ public class PointcutTransformer implements AgentBuilder.Transformer {
         for (MethodDescription.InDefinedShape methodDescription : methods) {
             for (Pointcut pointcut : pointcuts) {
                 if (pointcut.matchesMethodName(methodDescription.getActualName())) {
-                    LOGGER.info("pointcut matched" + methodDescription.getActualName() + pointcut.hashCode());
                     builder = event(builder, methodDescription);
                     break;
                 }

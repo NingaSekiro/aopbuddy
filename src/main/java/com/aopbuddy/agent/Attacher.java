@@ -28,6 +28,8 @@ public class Attacher {
      * 类加载器还是需要试验
      * 没有形参名称
      * groovy调用问题
+     * 考虑类加载隔离，加个api桥接
+     * 直接关闭浏览器也应该停止录制
      */
 
     public static void main(String[] args) throws Exception {
