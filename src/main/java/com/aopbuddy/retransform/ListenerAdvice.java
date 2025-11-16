@@ -1,14 +1,13 @@
 package com.aopbuddy.retransform;
 
 import com.aopbuddy.infrastructure.MockedReturnValue;
-import com.aopbuddy.infrastructure.ReflectMethodChecker;
 import lombok.SneakyThrows;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.implementation.bytecode.assign.Assigner;
 import net.bytebuddy.jar.asm.Type;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.List;
 
 
 /**
@@ -20,11 +19,6 @@ import java.util.*;
  */
 public class ListenerAdvice {
 
-    public static final Set<String> BLACK_METHOD_NAMES = Collections.unmodifiableSet(new HashSet<String>() {{
-        add("equals");
-        add("hashCode");
-        add("toString");
-    }});
 
     @SneakyThrows
     @Advice.OnMethodEnter
@@ -35,15 +29,7 @@ public class ListenerAdvice {
                                       @Advice.Origin("#s") String signature,
                                       @Advice.Origin Method method,
                                       @Advice.AllArguments Object[] args) {
-        List<Listener> listeners = new ArrayList<>();
-        for (Advisor advisor : Context.ADVISORS) {
-            if (ReflectMethodChecker.isGetter(method) || ReflectMethodChecker.isSetter(method) || !advisor.getPointcut().matchesClassName(className)) {
-                continue;
-            }
-            if (!BLACK_METHOD_NAMES.contains(methodName) && advisor.getPointcut().matchesMethodName(methodName)) {
-                listeners.add(advisor.getListener());
-            }
-        }
+        List<Listener> listeners = Context.getCache(Context.key(className, methodName));
         // attempt to resolve Method by signature (AgentBridge knows parameter type names)
         for (Listener l : listeners) {
             l.before(thiz, method, args);

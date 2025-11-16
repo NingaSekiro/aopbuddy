@@ -32,8 +32,7 @@ public class PointcutParser {
         String regex = className.replaceAll("\\*", "[a-zA-Z0-9_\\$]*")
                 .replaceAll("\\.\\.", "\\.([a-zA-Z0-9_\\$]+\\.)*")
                 .replaceAll("\\.", "\\\\.")
-                .replaceAll("\\$", "\\\\\\$")
-                ;
+                .replaceAll("\\$", "\\\\\\$");
         return regex;
     }
 
@@ -55,8 +54,8 @@ public class PointcutParser {
         PointcutParser pointcutParser = cache.get(key);
         if (pointcutParser == null) {
             pointcutParser = new PointcutParser(methodPointcut.getClassName()
-                    , methodPointcut.getMethodSignature().getName()
-                    , methodPointcut.getMethodSignature().getDescriptor());
+                    , methodPointcut.getMethodName()
+                    , methodPointcut.getParameterTypes());
             cache.put(key, pointcutParser);
         }
         return pointcutParser;

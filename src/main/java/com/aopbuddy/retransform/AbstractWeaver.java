@@ -1,7 +1,6 @@
 package com.aopbuddy.retransform;
 
 import com.aopbuddy.infrastructure.LoggerFactory;
-import net.bytebuddy.jar.asm.Opcodes;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
@@ -35,17 +34,11 @@ public class AbstractWeaver implements ClassFileTransformer {
             if (skip(className) || !Context.matchesClass(className)) {
                 return classBytes;
             }
-            byte[] transform = transformer.transform(loader, name, classBeingRedefined, domain, classBytes);
-            LOGGER.info("weaving " + className + " - "
-//                    +transform.hashCode()
-            );
-            return transform;
+            return transformer.transform(loader, name, classBeingRedefined, domain, classBytes);
         } catch (Throwable e) {
-
             LOGGER.log(Level.WARNING
                     , "weaving error " + name + " - ", e);
             throw new RuntimeException(e);
-
         }
     }
 

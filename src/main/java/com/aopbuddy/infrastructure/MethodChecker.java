@@ -1,18 +1,18 @@
 package com.aopbuddy.infrastructure;
 
-import java.lang.reflect.Method;
+import net.bytebuddy.description.method.MethodDescription;
 
-public class ReflectMethodChecker {
+public class MethodChecker {
 
     /**
      * 判断是否为 Getter 方法
      */
-    public static boolean isGetter(Method method) {
+    public static boolean isGetter(MethodDescription method) {
         String name = method.getName();
         if (!name.startsWith("get") && !name.startsWith("is")) {
             return false;
         }
-        if (method.getParameterCount() != 0 || method.getReturnType() == Void.TYPE) {
+        if (!method.getParameters().isEmpty() || "void".equals(method.getReturnType().getTypeName())) {
             return false;
         }
         // 可选：检查驼峰命名（首字母后大写）
@@ -26,12 +26,12 @@ public class ReflectMethodChecker {
     /**
      * 判断是否为 Setter 方法
      */
-    public static boolean isSetter(Method method) {
+    public static boolean isSetter(MethodDescription method) {
         String name = method.getName();
         if (!name.startsWith("set") || name.length() <= 3) {
             return false;
         }
-        if (method.getParameterCount() != 1 || method.getReturnType() != Void.TYPE) {
+        if (method.getParameters().size() != 1 || !"void".equals(method.getReturnType().getTypeName())) {
             return false;
         }
         // 可选：检查驼峰命名

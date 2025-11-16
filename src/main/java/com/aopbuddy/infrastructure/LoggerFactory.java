@@ -15,8 +15,8 @@ public class LoggerFactory {
 
     public enum LogFile {
         WEAVING("weaving.log"),
-        LISTEN("listen.log"),
         WEB("web.log"),
+        ERROR("error.log"),
         ;
 
         public final String fileName;

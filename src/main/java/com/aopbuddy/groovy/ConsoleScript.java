@@ -8,7 +8,6 @@ package com.aopbuddy.groovy;
 import com.aopbuddy.agent.TraceListener;
 import com.aopbuddy.aspect.MethodPointcut;
 import com.aopbuddy.infrastructure.JsonUtil;
-import com.aopbuddy.infrastructure.LoggerFactory;
 import com.aopbuddy.infrastructure.MethodChainUtil;
 import com.aopbuddy.record.CaffeineCache;
 import com.aopbuddy.record.MethodChain;
@@ -23,14 +22,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.logging.Logger;
 
-import static com.aopbuddy.infrastructure.LoggerFactory.LogFile.WEB;
 
 
 public abstract class ConsoleScript extends Script {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConsoleScript.class.getName(), WEB);
 
     public Object[] get(Class<?> cla) {
         return this.get(cla, 10);

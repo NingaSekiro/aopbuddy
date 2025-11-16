@@ -12,8 +12,8 @@ import net.bytebuddy.matcher.ElementMatchers;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
-
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -22,12 +22,15 @@ public final class Context {
     private static final Logger LOGGER = LoggerFactory.getLogger(Context.class.getName());
     public static final List<Advisor> ADVISORS = Collections.synchronizedList(new ArrayList<>());
     public static Instrumentation inst;
+    private static final ConcurrentHashMap<String, List<Listener>> CACHE = new ConcurrentHashMap<String, List<Listener>>();
+
 
     // 这里在java agent下可能有问题
 //    static {
 //        init(null);
 //    }
 
+    // DebugAgentListener->
     public static void init(Instrumentation instrumentation) {
         // inst只维持一份
         if (inst == null && instrumentation != null) {
@@ -36,6 +39,7 @@ public final class Context {
             inst = ByteBuddyAgent.install();
         }
         // 只有第一次才会添加ClassFileTransformer，防止后面添加，中间层用ADVISORS来动态控制
+        //AbstractWeaver -> buddyTransformer2 -> PointcutTransformer
         if (TransformerController.buddyTransformer == null) {
             ClassFileTransformer buddyTransformer2 = new AgentBuilder
                     .Default()
@@ -56,7 +60,7 @@ public final class Context {
     }
 
 
-    public static void registerAdvisor(Pointcut pointcut, Listener listener) {
+    public synchronized static void registerAdvisor(Pointcut pointcut, Listener listener) {
         Optional<Advisor> first = ADVISORS.stream()
                 .filter(advisor -> advisor.getPointcut().equals(pointcut))
                 .filter(advisor -> advisor.getListener().getClass().equals(listener.getClass()))
@@ -68,20 +72,43 @@ public final class Context {
         weave(pointcut);
     }
 
-    public static void unregisterAdvisor(Pointcut pointcut, Class<? extends Listener> listenerClass) {
+    public synchronized static void unregisterAdvisor(Pointcut pointcut, Class<? extends Listener> listenerClass) {
         Optional<Advisor> first = ADVISORS.stream()
                 .filter(advisor -> advisor.getPointcut().equals(pointcut))
                 .filter(advisor -> advisor.getListener().getClass().equals(listenerClass))
                 .findFirst();
         if (first.isPresent()) {
+            first.get().removeSignature();
             ADVISORS.remove(first.get());
         }
     }
 
-    public static void unregisterAdvisorByListener(Class<? extends Listener> listenerClass) {
+    public synchronized static void unregisterAdvisorByListener(Class<? extends Listener> listenerClass) {
         ADVISORS.removeIf(advisor -> advisor.getListener().getClass().equals(listenerClass));
     }
 
+    public synchronized static void addCache(String key, Listener listener) {
+        List<Listener> listeners1 = CACHE.computeIfAbsent(key, k -> new ArrayList<>());
+        listeners1.add(listener);
+    }
+
+    public synchronized static void deleteCache(Set<String> keys, Listener listener) {
+        for (String key : keys) {
+            List<Listener> listeners1 = CACHE.get(key);
+            if (listeners1 == null) {
+                return;
+            }
+            listeners1.removeIf(listener1 -> listener1 == listener);
+        }
+    }
+
+    public static List<Listener> getCache(String signature) {
+        return CACHE.get(signature);
+    }
+
+    public static String key(String className, String methodName) {
+        return className + methodName;
+    }
 
     @SneakyThrows
     private static void weave(Pointcut pointcut) {

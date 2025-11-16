@@ -1,8 +1,14 @@
 package com.aopbuddytest;
 
 
+import lombok.Setter;
+
+@Setter
 public class TargetService {
-    public String greet(String name) {
+
+    public String name;
+
+    public String greetString(String name) {
         System.out.println("Service.greet running");
         return greet(1);
     }

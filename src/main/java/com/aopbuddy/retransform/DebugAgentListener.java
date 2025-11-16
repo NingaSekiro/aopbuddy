@@ -50,7 +50,6 @@ public class DebugAgentListener implements AgentBuilder.Listener {
 
     @Override
     public void onComplete(String typeName, ClassLoader classLoader, JavaModule module, boolean loaded) {
-        // LOGGER.info("onComplete "+typeName);
     }
 
     public static void dump(String name, byte[] bytes) {
