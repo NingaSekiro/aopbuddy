@@ -3,7 +3,6 @@ package com.aopbuddy.retransform;
 import com.aopbuddy.infrastructure.LoggerFactory;
 
 import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,7 +22,7 @@ public class AbstractWeaver implements ClassFileTransformer {
 
     @Override
     public byte[] transform(ClassLoader loader, String name, Class<?> classBeingRedefined,
-                            ProtectionDomain domain, byte[] classBytes) throws IllegalClassFormatException {
+                            ProtectionDomain domain, byte[] classBytes) {
         try {
             // 如果不为空可以抛异常
             ClassFileTransformer transformer = this.targetTransformer;
@@ -38,7 +37,7 @@ public class AbstractWeaver implements ClassFileTransformer {
         } catch (Throwable e) {
             LOGGER.log(Level.WARNING
                     , "weaving error " + name + " - ", e);
-            throw new RuntimeException(e);
+            return classBytes;
         }
     }
 

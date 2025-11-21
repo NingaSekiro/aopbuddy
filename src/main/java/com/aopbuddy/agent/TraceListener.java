@@ -6,17 +6,14 @@ import com.aopbuddy.record.*;
 import com.aopbuddy.retransform.Advisor;
 import com.aopbuddy.retransform.Context;
 import com.aopbuddy.retransform.Listener;
+import javafx.util.Pair;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.aopbuddy.record.ByteBuddyCallTracer.CALL_CHAIN_CONTEXT;
-import static com.aopbuddy.record.ByteBuddyCallTracer.CALL_CONTEXT;
+import static com.aopbuddy.record.ByteBuddyCallTracer.*;
 
 
 public class TraceListener implements Listener {
@@ -31,6 +28,8 @@ public class TraceListener implements Listener {
         }
         callRecords.push(callRecord);
         CALL_CHAIN_CONTEXT.get().getCallRecords().add(callRecord);
+        BEFORE_METHOD_INDEX_MAP.get().computeIfAbsent(method.toString(), k -> new ArrayList<>()).add(CALL_CHAIN_CONTEXT.get().getCallRecords().size() - 1);
+
     }
 
 
@@ -53,7 +52,34 @@ public class TraceListener implements Listener {
         CallRecord callRecord = CallRecord.builder().method(method.toString()).returnValue(returnValue).build();
         List<CallRecord> callRecords1 = CALL_CHAIN_CONTEXT.get().getCallRecords();
         callRecords1.add(callRecord);
+        RETURN_METHOD_INDEX_MAP.get().computeIfAbsent(method.toString(), k -> new ArrayList<>()).add(callRecords1.size() - 1);
         if (callRecords.isEmpty()) {
+            List<Pair<Integer, Integer>> methodPairs = new ArrayList<>();
+            for (Map.Entry<String, List<Integer>> stringListEntry : RETURN_METHOD_INDEX_MAP.get().entrySet()) {
+                if (stringListEntry.getValue().size() <= 1) {
+                    continue;
+                }
+                List<Integer> afterIndex = stringListEntry.getValue();
+                String key = stringListEntry.getKey();
+                List<Integer> beforeIndex = BEFORE_METHOD_INDEX_MAP.get().get(key);
+                for (int i = 0; i < afterIndex.size() - 1; i++) {
+                    int preReturn = afterIndex.get(i);
+                    if (preReturn + 1 == beforeIndex.get(i + 1)) {
+                        methodPairs.add(new Pair<>(beforeIndex.get(i), afterIndex.get(i)));
+                    }
+                }
+            }
+            // 从后往前删除，避免索引偏移问题
+            methodPairs.sort((a, b) -> b.getKey() - a.getKey()); // 按开始索引降序排序
+            for (Pair<Integer, Integer> pair : methodPairs) {
+                int start = pair.getKey();
+                int end = pair.getValue();
+                // 确保索引在有效范围内
+                if (start >= 0 && end < callRecords1.size() && start <= end) {
+                    // 从end到start删除，避免索引变化问题
+                    callRecords1.subList(start, end + 1).clear();
+                }
+            }
             MethodChainKey methodChainKey = MethodChainKey.buildMethodChainKey(callRecords1);
             // 当前调用链结束，保存调用链
             int andIncrement = ByteBuddyCallTracer.CHAIN_CNT.getAndIncrement();
@@ -70,6 +96,8 @@ public class TraceListener implements Listener {
             // 重置调用链上下文
             CALL_CONTEXT.remove();
             CALL_CHAIN_CONTEXT.remove();
+            BEFORE_METHOD_INDEX_MAP.remove();
+            RETURN_METHOD_INDEX_MAP.remove();
         }
     }
 
@@ -111,4 +139,5 @@ public class TraceListener implements Listener {
         }
         return null;
     }
+
 }

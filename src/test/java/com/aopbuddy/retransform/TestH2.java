@@ -3,9 +3,7 @@ package com.aopbuddy.retransform;
 import com.aopbuddy.agent.TraceListener;
 import com.aopbuddy.aspect.MethodPointcut;
 import com.aopbuddy.infrastructure.JsonUtil;
-import com.aopbuddy.record.CaffeineCache;
-import com.aopbuddy.record.MethodChain;
-import com.aopbuddy.record.MethodChainKey;
+import com.aopbuddy.record.*;
 import com.aopbuddytest.Model;
 import com.aopbuddytest.TargetService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -13,14 +11,19 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static com.aopbuddy.record.ByteBuddyCallTracer.CALL_CHAIN_CONTEXT;
 import static com.aopbuddy.record.ByteBuddyCallTracer.CALL_CONTEXT;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class TestH2 {
 
@@ -35,14 +38,13 @@ public class TestH2 {
     public void testTrace() {
         Context.init(null);
         MethodPointcut pointcut = MethodPointcut.of(
-                "com.aopbuddytest.*", "*", "(..)");
+                "com.aopbuddytest.TargetService", "*", "(..)");
         Listener listener = new TraceListener();
         Context.registerAdvisor(pointcut, listener);
 
-
         TargetService svc = new TargetService();
-        Model model = new Model();
-        svc.greet(model);
+        String again = svc.greetString("again");
+
 
         int size = CaffeineCache.getCache().asMap().size();
         // 由于 MethodChainKey 现在由系统自动构造，需要从缓存中获取实际的 key
@@ -53,8 +55,8 @@ public class TestH2 {
         // 获取第一个 key（应该是自动生成的）
         MethodChainKey methodChainKey = cacheMap.keySet().iterator().next();
         // 验证入口方法名正确
-        assertEquals("public com.aopbuddytest.Model com.aopbuddytest.TargetService.greet(com.aopbuddytest.Model)", 
-                     methodChainKey.getStartMethodName());
+        assertEquals("public com.aopbuddytest.Model com.aopbuddytest.TargetService.greet(com.aopbuddytest.Model)",
+                methodChainKey.getStartMethodName());
         MethodChain methodChain = CaffeineCache.get(methodChainKey);
         assertNotNull(methodChain);
         assertEquals(0, CALL_CONTEXT.get().size());
@@ -90,8 +92,8 @@ public class TestH2 {
         // 获取第一个 key（应该是自动生成的）
         MethodChainKey methodChainKey = cacheMap.keySet().iterator().next();
         // 验证入口方法名正确
-        assertEquals("public com.aopbuddytest.Model com.aopbuddytest.TargetService.greet(com.aopbuddytest.Model)", 
-                     methodChainKey.getStartMethodName());
+        assertEquals("public com.aopbuddytest.Model com.aopbuddytest.TargetService.greet(com.aopbuddytest.Model)",
+                methodChainKey.getStartMethodName());
         MethodChain methodChain = CaffeineCache.get(methodChainKey);
         assertNotNull(methodChain);
         int size1 = methodChain.getCallRecordDos().size();
@@ -103,6 +105,29 @@ public class TestH2 {
         assertNotNull(map);
         assertEquals(0, CALL_CONTEXT.get().size());
         assertEquals(0, CALL_CHAIN_CONTEXT.get().getCallRecords().size());
+    }
+
+    @Test
+    public void testCycle() {
+        Context.init(null);
+        MethodPointcut pointcut = MethodPointcut.of(
+                "com.aopbuddytest.TargetService", "cycle*", "(..)");
+        Listener listener = new TraceListener();
+        Context.registerAdvisor(pointcut, listener);
+        TargetService svc = new TargetService();
+        svc.cycleStart();
+        Map<MethodChainKey, MethodChain> cacheMap = CaffeineCache.getCache().asMap();
+        Collection<MethodChain> values = cacheMap.values();
+        List<String> methodNames = new ArrayList<>();
+        for (MethodChain value : values) {
+            ArrayBlockingQueue<CallChainDo> callRecordDos = value.getCallRecordDos();
+            for (CallChainDo callChainDo : callRecordDos) {
+                for (CallRecordDo callRecord : callChainDo.getCallRecords()) {
+                    methodNames.add(callRecord.getMethod());
+                }
+            }
+        }
+        System.out.println("ddd");
     }
 
 
