@@ -43,6 +43,7 @@ public final class Context {
         if (TransformerController.buddyTransformer == null) {
             ClassFileTransformer buddyTransformer2 = new AgentBuilder
                     .Default()
+                    .with(AgentBuilder.TypeStrategy.Default.DECORATE)
                     .disableClassFormatChanges()
 //                重新 inject 了同一个类
                     .with(new DebugAgentListener())
