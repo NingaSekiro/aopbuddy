@@ -1,14 +1,14 @@
 package com.aopbuddy.agent;
 
 import com.aopbuddy.aspect.MethodPointcut;
-import com.aopbuddy.infrastructure.MockedReturnValue;
+import com.aopbuddy.bytekit.MethodInfo;
+import com.aopbuddy.infrastructure.StringUtils;
 import com.aopbuddy.record.*;
 import com.aopbuddy.retransform.Advisor;
 import com.aopbuddy.retransform.Context;
 import com.aopbuddy.retransform.Listener;
 import javafx.util.Pair;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,42 +17,46 @@ import static com.aopbuddy.record.ByteBuddyCallTracer.*;
 
 
 public class TraceListener implements Listener {
+
     @Override
-    public void before(Object target, Method method, Object[] args) {
-        // 获取调用上下文
+    public void before(Object target, Class<?> clazz, MethodInfo methodInfo, Object[] args) {
+        // 获取方法栈
         Stack<CallRecord> callRecords = CALL_CONTEXT.get();
-        CallRecord callRecord = CallRecord.builder().target(target).method(method.toString()).args(args).build();
+        CallRecord callRecord = CallRecord.builder().target(target).method(StringUtils.toCompleteMethodName(methodInfo.getMethodAccess(), clazz.getName(), methodInfo.getMethodName())).args(args).build();
+        // 判断是否是web请求
         if (callRecords.isEmpty()) {
-            String message = extractMessage(target, method, args);
+            String message = extractMessage(target, clazz, methodInfo, args);
             callRecord.setMessage(message);
         }
         callRecords.push(callRecord);
+        // 调用链
         CALL_CHAIN_CONTEXT.get().getCallRecords().add(callRecord);
-        BEFORE_METHOD_INDEX_MAP.get().computeIfAbsent(method.toString(), k -> new ArrayList<>()).add(CALL_CHAIN_CONTEXT.get().getCallRecords().size() - 1);
-
+        // 以备后续清除循环方法
+        BEFORE_METHOD_INDEX_MAP.get().computeIfAbsent(StringUtils.toCompleteMethodName(methodInfo.getMethodAccess(), clazz.getName(), methodInfo.getMethodName()), k -> new ArrayList<>()).add(CALL_CHAIN_CONTEXT.get().getCallRecords().size() - 1);
     }
 
 
     @Override
-    public MockedReturnValue after(Object target, Method method, Object[] args, Object returnValue) {
-        extracted(method, returnValue);
-        return new MockedReturnValue(false, null);
+    public void after(Object target, Class<?> clazz, MethodInfo methodInfo, Object[] args, Object returnValue) {
+        extracted(clazz, methodInfo, args, returnValue);
     }
 
 
     @Override
-    public void onException(Object target, Method method, Object[] args, Throwable throwable) {
-        extracted(method, throwable);
+    public void onException(Object target, Class<?> clazz, MethodInfo methodInfo, Object[] args, Throwable throwable) {
+        extracted(clazz, methodInfo, args, throwable);
     }
 
-    private static void extracted(Method method, Object returnValue) {
+
+    private static void extracted(Class<?> clazz, MethodInfo methodInfo, Object[] args, Object returnValue) {
         Stack<CallRecord> callRecords = CALL_CONTEXT.get();
         callRecords.pop();
         // CALL_CONTEXT,设置返回值
-        CallRecord callRecord = CallRecord.builder().method(method.toString()).returnValue(returnValue).build();
+        CallRecord callRecord = CallRecord.builder().method(StringUtils.toCompleteMethodName(methodInfo.getMethodAccess(), clazz.getName(), methodInfo.getMethodName())).returnValue(returnValue).build();
         List<CallRecord> callRecords1 = CALL_CHAIN_CONTEXT.get().getCallRecords();
         callRecords1.add(callRecord);
-        RETURN_METHOD_INDEX_MAP.get().computeIfAbsent(method.toString(), k -> new ArrayList<>()).add(callRecords1.size() - 1);
+        RETURN_METHOD_INDEX_MAP.get().computeIfAbsent(StringUtils.toCompleteMethodName(methodInfo.getMethodAccess(), clazz.getName(), methodInfo.getMethodName()), k -> new ArrayList<>()).add(callRecords1.size() - 1);
+        // 方法调用完成
         if (callRecords.isEmpty()) {
             List<Pair<Integer, Integer>> methodPairs = new ArrayList<>();
             for (Map.Entry<String, List<Integer>> stringListEntry : RETURN_METHOD_INDEX_MAP.get().entrySet()) {
@@ -104,8 +108,8 @@ public class TraceListener implements Listener {
     /**
      * 提取消息（根据规则）
      */
-    private static String extractMessage(Object target, Method method, Object[] args) {
-        if (target == null || method == null) {
+    private static String extractMessage(Object target, Class<?> clazz, MethodInfo methodInfo, Object[] args) {
+        if (target == null || clazz == null || methodInfo == null) {
             return null;
         }
 
@@ -113,10 +117,9 @@ public class TraceListener implements Listener {
         Set<String> typeNames = Arrays.stream(target.getClass().getGenericInterfaces())
                 .map((Type::getTypeName))
                 .collect(Collectors.toSet());
-        String methodName = method.getName();
 
         // 查找匹配的规则
-        MethodMessageRule rule = MethodMessageRuleManager.findMatchingRule(typeNames, methodName);
+        MethodMessageRule rule = MethodMessageRuleManager.findMatchingRule(typeNames, methodInfo.getMethodName());
         if (rule == null || rule.getMessageExpression() == null) {
             return null;
         }

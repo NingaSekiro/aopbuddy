@@ -1,6 +1,11 @@
 package com.aopbuddy.retransform;
 
+import com.alibaba.deps.org.objectweb.asm.Opcodes;
+import com.alibaba.deps.org.objectweb.asm.Type;
+import com.alibaba.deps.org.objectweb.asm.tree.MethodNode;
 import com.aopbuddy.aspect.Pointcut;
+import com.aopbuddy.bytekit.Enhancer;
+import com.aopbuddy.infrastructure.ArthasCheckUtils;
 import com.aopbuddy.infrastructure.LoggerFactory;
 import com.aopbuddy.infrastructure.TypeElementMatcher;
 import lombok.SneakyThrows;
@@ -22,7 +27,7 @@ public final class Context {
     private static final Logger LOGGER = LoggerFactory.getLogger(Context.class.getName());
     public static final List<Advisor> ADVISORS = Collections.synchronizedList(new ArrayList<>());
     public static Instrumentation inst;
-    private static final ConcurrentHashMap<String, List<Listener>> CACHE = new ConcurrentHashMap<String, List<Listener>>();
+    public static final ConcurrentHashMap<String, List<Listener>> CACHE = new ConcurrentHashMap<String, List<Listener>>();
 
 
     // 这里在java agent下可能有问题
@@ -41,22 +46,7 @@ public final class Context {
         // 只有第一次才会添加ClassFileTransformer，防止后面添加，中间层用ADVISORS来动态控制
         //AbstractWeaver -> buddyTransformer2 -> PointcutTransformer
         if (TransformerController.buddyTransformer == null) {
-            ClassFileTransformer buddyTransformer2 = new AgentBuilder
-                    .Default()
-                    .with(AgentBuilder.TypeStrategy.Default.DECORATE)
-                    .disableClassFormatChanges()
-//                重新 inject 了同一个类
-                    .with(new DebugAgentListener())
-                    .ignore(getDefaultIgnore())
-                    .type(ElementMatchers.not((ElementMatchers.isSynthetic())
-                            .or(TypeDescription::isAnonymousType)
-                    ).and(new TypeElementMatcher()))
-                    .transform(new PointcutTransformer())
-                    .makeRaw();
-            AbstractWeaver proxyWeaver = new AbstractWeaver();
-            proxyWeaver.setTargetTransformer(buddyTransformer2);
-            TransformerController.buddyTransformer = proxyWeaver;
-            inst.addTransformer(proxyWeaver, true);
+            inst.addTransformer(new Enhancer(), true);
         }
     }
 
@@ -115,9 +105,11 @@ public final class Context {
     private static void weave(Pointcut pointcut) {
         Class[] allLoadedClasses = inst.getAllLoadedClasses();
         List<Class> classes = Arrays.stream(allLoadedClasses)
-                .filter(clz -> pointcut.matchesClassName(clz.getName())).collect(Collectors.toList());
+                .filter(clz -> !isIgnore(clz.getName())
+                        && pointcut.matchesClassName(clz.getName())
+                )
+                .collect(Collectors.toList());
         LOGGER.info("weave classes: " + classes);
-        LOGGER.info("weave advisors" + ADVISORS);
         if (classes.isEmpty()) {
             LOGGER.info("empty poincut");
             return;
@@ -135,18 +127,71 @@ public final class Context {
         return false;
     }
 
+    public static boolean isIgnore(String className) {
+        return className.startsWith("java.")
+                || className.startsWith("jdk.")
+                || className.startsWith("javax.")
+                || className.startsWith("sun.")
+                || className.startsWith("com.sun.")
+                || className.startsWith("net.bytebuddy.")
+                || className.startsWith("org.aspectj.")
+                || className.startsWith("com.aopbuddy.")
+                || className.contains("BySpringCGLIB$$");
+    }
+
     /**
-     * 默认忽视包
+     * 是否需要忽略
      */
-    public static ElementMatcher.Junction<? super TypeDescription> getDefaultIgnore() {
-        return ElementMatchers.nameStartsWith("java.")
-                .or(ElementMatchers.nameStartsWith("jdk."))
-                .or(ElementMatchers.nameStartsWith("javax."))
-                .or(ElementMatchers.nameStartsWith("sun."))
-                .or(ElementMatchers.nameStartsWith("com.sun."))
-                .or(ElementMatchers.nameStartsWith("net.bytebuddy."))
-                .or(ElementMatchers.nameStartsWith("org.aspectj."))
-                .or(ElementMatchers.nameStartsWith("com.aopbuddy."))
-                .or(ElementMatchers.isSynthetic());
+    public static boolean isIgnore(MethodNode methodNode) {
+        return null == methodNode || isAbstract(methodNode.access)
+                || ArthasCheckUtils.isEquals(methodNode.name, "<clinit>")
+                || BLACK_METHOD_NAMES.contains(methodNode.name)
+                || methodNode.name.contains("<init>")
+                || isGetterOrSetter(methodNode);
+    }
+
+    /**
+     * 是否抽象属性
+     */
+    private static boolean isAbstract(int access) {
+        return (Opcodes.ACC_ABSTRACT & access) == Opcodes.ACC_ABSTRACT;
+    }
+
+    private static final Set<String> BLACK_METHOD_NAMES = Collections.unmodifiableSet(new HashSet<String>() {{
+        add("equals");
+        add("hashCode");
+        add("toString");
+        add("finalize");
+        add("clone");
+    }});
+
+    private static boolean isGetterOrSetter(MethodNode methodNode) {
+        String name = methodNode.name;
+        Type[] argTypes = Type.getArgumentTypes(methodNode.desc);
+        Type returnType = Type.getReturnType(methodNode.desc);
+
+        // 检查是否为 getter（getName, isEnabled 等）
+        // getter 特征：方法名以 get 开头，无参数，有返回值
+        if (name.startsWith("get") && argTypes.length == 0
+                && !returnType.equals(Type.VOID_TYPE)) {
+            return true;
+        }
+
+        // 检查布尔类型的 getter（isEnabled, hasPermission 等）
+        // boolean getter 特征：以 is 或 has 开头，无参数，返回 boolean
+        if ((name.startsWith("is") || name.startsWith("has"))
+                && argTypes.length == 0
+                && returnType.equals(Type.BOOLEAN_TYPE)) {
+            return true;
+        }
+
+        // 检查是否为 setter（setName 等）
+        // setter 特征：方法名以 set 开头，1个参数，返回 void
+        if (name.startsWith("set") && argTypes.length == 1
+                && returnType.equals(Type.VOID_TYPE)) {
+            return true;
+        }
+
+        return false;
     }
 }

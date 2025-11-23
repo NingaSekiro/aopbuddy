@@ -91,8 +91,7 @@ public class MethodChainKey {
                 continue;
             }
             String methodStr = callRecords.get(i).getMethod();
-            SimplifiedMethod simplifiedMethod = simplifyMethod(methodStr);
-            methodSignatures.add(simplifiedMethod.toString());
+            methodSignatures.add(methodStr);
         }
         // 计算调用链的哈希值
         key.setChainHash(calculateChainHash(methodSignatures));

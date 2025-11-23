@@ -29,14 +29,8 @@ public class ListenerAdvice {
                                       @Advice.Origin("#s") String signature,
                                       @Advice.Origin Method method,
                                       @Advice.AllArguments Object[] args) {
-        List<Listener> listeners = Context.getCache(Context.key(className, methodName));
-        // attempt to resolve Method by signature (AgentBridge knows parameter type names)
-        for (Listener l : listeners) {
-            l.before(thiz, method, args);
-        }
-        EnterResult enterResult = new EnterResult();
-        enterResult.setListeners(listeners);
-        return enterResult;
+
+        return new EnterResult();
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class)
@@ -49,34 +43,8 @@ public class ListenerAdvice {
                               @Advice.Return(typing = Assigner.Typing.DYNAMIC, readOnly = false) Object returned,
                               @Advice.Thrown Throwable thrown,
                               @Advice.Enter EnterResult enterResult) {
-        List<Listener> listeners = enterResult.getListeners();
-        if (thrown != null) {
-            for (Listener l : listeners) {
-                l.onException(thiz, method, args, thrown);
-            }
-        } else {
-            for (Listener l : listeners) {
-                MockedReturnValue after = l.after(thiz, method, args, returned);
-                if (after != null && after.isMock()) {
-                    returned = after.getMockValue();
-                }
-            }
-        }
+
     }
 
-    public static Method getMethod(String className, String methodName, String methodDesc) throws ClassNotFoundException, NoSuchMethodException {
-        // 加载类
-        Class<?> clazz = Class.forName(className);
-
-        // 解析方法描述符，获取参数类型
-        Type[] argumentTypes = Type.getArgumentTypes(methodDesc);
-        Class<?>[] parameterTypes = new Class<?>[argumentTypes.length];
-        for (int i = 0; i < argumentTypes.length; i++) {
-            parameterTypes[i] = Class.forName(argumentTypes[i].getClassName());
-        }
-
-        // 获取 Method 对象
-        return clazz.getDeclaredMethod(methodName, parameterTypes);
-    }
 
 }

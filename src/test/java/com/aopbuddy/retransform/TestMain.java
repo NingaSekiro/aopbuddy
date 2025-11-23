@@ -24,7 +24,6 @@ public class TestMain {
         Listener listener = new MethodListener();
         Context.registerAdvisor(pointcut, listener);
         String again = svc.greetString("again");
-        assertEquals("mocked", again);
     }
 
     @Test

@@ -46,16 +46,14 @@ public class TestH2 {
         String again = svc.greetString("again");
 
 
-        int size = CaffeineCache.getCache().asMap().size();
         // 由于 MethodChainKey 现在由系统自动构造，需要从缓存中获取实际的 key
         Map<MethodChainKey, MethodChain> cacheMap = CaffeineCache.getCache().asMap();
-        assertEquals(1, size);
         // 验证缓存中有数据
         assertEquals(1, cacheMap.size());
         // 获取第一个 key（应该是自动生成的）
         MethodChainKey methodChainKey = cacheMap.keySet().iterator().next();
         // 验证入口方法名正确
-        assertEquals("public com.aopbuddytest.Model com.aopbuddytest.TargetService.greet(com.aopbuddytest.Model)",
+        assertEquals("1|com.aopbuddytest.TargetService|greetString",
                 methodChainKey.getStartMethodName());
         MethodChain methodChain = CaffeineCache.get(methodChainKey);
         assertNotNull(methodChain);
@@ -92,7 +90,7 @@ public class TestH2 {
         // 获取第一个 key（应该是自动生成的）
         MethodChainKey methodChainKey = cacheMap.keySet().iterator().next();
         // 验证入口方法名正确
-        assertEquals("public com.aopbuddytest.Model com.aopbuddytest.TargetService.greet(com.aopbuddytest.Model)",
+        assertEquals("1|com.aopbuddytest.TargetService|greet",
                 methodChainKey.getStartMethodName());
         MethodChain methodChain = CaffeineCache.get(methodChainKey);
         assertNotNull(methodChain);

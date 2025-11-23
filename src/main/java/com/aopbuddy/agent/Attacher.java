@@ -30,6 +30,8 @@ public class Attacher {
      * groovy调用问题
      * 考虑类加载隔离，加个api桥接
      * 直接关闭浏览器也应该停止录制(完成)
+     * 循环该如何减少录制数据？
+     * private默认不展示，可以增量展示
      */
 
     public static void main(String[] args) throws Exception {
@@ -41,6 +43,7 @@ public class Attacher {
         // select pid
         try {
             pid = ProcessUtils.select();
+            System.out.println("Selected pid: " + pid);
         } catch (InputMismatchException e) {
             System.out.println("Please input an integer to select pid.");
             System.exit(1);

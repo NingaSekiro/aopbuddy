@@ -1,13 +1,13 @@
 package com.aopbuddy.retransform;
 
-import com.aopbuddy.infrastructure.MockedReturnValue;
 
-import java.lang.reflect.Method;
+import com.aopbuddy.bytekit.MethodInfo;
 
 public interface Listener {
-    void before(Object target, Method method, Object[] args);
+    //
+    void before(Object target, Class<?> clazz, MethodInfo methodInfo, Object[] args);
 
-    MockedReturnValue after(Object target, Method method, Object[] args, Object returnValue);
+    void after(Object target, Class<?> clazz, MethodInfo methodInfo, Object[] args, Object returnValue);
 
-    void onException(Object target, Method method, Object[] args, Throwable throwable);
+    void onException(Object target, Class<?> clazz, MethodInfo methodInfo,Object[] args, Throwable throwable);
 }
