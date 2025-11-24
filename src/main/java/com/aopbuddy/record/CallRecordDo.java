@@ -12,14 +12,16 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 public class CallRecordDo {
     private Long id;
+    private Timestamp timestamp;
+
     private int callChainId;
     private String method;
     private String args;
     private String returnValue;
     private String target;
-    private Timestamp timestamp;
     private String threadName;
     private String message;
+    private int depth;
 
     public static CallRecordDo toCallRecordDo(CallRecord callRecord) {
         CallRecordDo callRecordDo = new CallRecordDo();

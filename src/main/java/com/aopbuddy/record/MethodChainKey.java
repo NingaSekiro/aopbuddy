@@ -54,26 +54,6 @@ public class MethodChainKey {
         return JsonUtil.toJson(this);
     }
 
-    /**
-     * 简化方法签名
-     *
-     * @param fullMethod 方法签名字符串
-     * @return 简化后的方法信息
-     */
-    public static SimplifiedMethod simplifyMethod(String fullMethod) {
-        String[] parts = fullMethod.split(" ");
-        for (int i = 0; i < parts.length; i++) {
-            if (parts[i].contains("(") && parts[i].contains(")")) {
-                String[] methodParts = parts[i].split("\\(");
-                String[] classNameParts = methodParts[0].split("\\.");
-                String returnSimpleClassName = parts[i - 1].substring(parts[i - 1].lastIndexOf('.') + 1);
-                String simpleTargetClassName = classNameParts[classNameParts.length - 2];
-                String methodName = classNameParts[classNameParts.length - 1] + "()";
-                return new SimplifiedMethod(returnSimpleClassName, simpleTargetClassName, methodName);
-            }
-        }
-        return null;
-    }
 
     /**
      * 从调用链记录中构造 MethodChainKey

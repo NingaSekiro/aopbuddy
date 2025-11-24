@@ -4,9 +4,14 @@ import com.alibaba.bytekit.asm.MethodProcessor;
 import com.alibaba.bytekit.asm.interceptor.InterceptorProcessor;
 import com.alibaba.bytekit.asm.interceptor.parser.DefaultInterceptorClassParser;
 import com.alibaba.bytekit.asm.location.Location;
+import com.alibaba.bytekit.asm.location.LocationType;
+import com.alibaba.bytekit.asm.location.filter.GroupLocationFilter;
+import com.alibaba.bytekit.asm.location.filter.InvokeContainLocationFilter;
+import com.alibaba.bytekit.asm.location.filter.LocationFilter;
 import com.alibaba.bytekit.utils.AsmUtils;
 import com.alibaba.deps.org.objectweb.asm.ClassReader;
 import com.alibaba.deps.org.objectweb.asm.Opcodes;
+import com.alibaba.deps.org.objectweb.asm.Type;
 import com.alibaba.deps.org.objectweb.asm.tree.ClassNode;
 import com.alibaba.deps.org.objectweb.asm.tree.MethodNode;
 import com.aopbuddy.retransform.Advisor;
@@ -70,6 +75,21 @@ public class Enhancer implements ClassFileTransformer {
             interceptorProcessors.addAll(defaultInterceptorClassParser.parse(SpyInterceptors.SpyInterceptor1.class));
             interceptorProcessors.addAll(defaultInterceptorClassParser.parse(SpyInterceptors.SpyInterceptor2.class));
             interceptorProcessors.addAll(defaultInterceptorClassParser.parse(SpyInterceptors.SpyInterceptor3.class));
+
+            // 用于检查是否已插入了 spy函数，如果已有则不重复处理
+            GroupLocationFilter groupLocationFilter = new GroupLocationFilter();
+
+            LocationFilter enterFilter = new InvokeContainLocationFilter(Type.getInternalName(SpyAPI.class), "atEnter",
+                    LocationType.ENTER);
+            LocationFilter existFilter = new InvokeContainLocationFilter(Type.getInternalName(SpyAPI.class), "atExit",
+                    LocationType.EXIT);
+            LocationFilter exceptionFilter = new InvokeContainLocationFilter(Type.getInternalName(SpyAPI.class),
+                    "atExceptionExit", LocationType.EXCEPTION_EXIT);
+
+            groupLocationFilter.addFilter(enterFilter);
+            groupLocationFilter.addFilter(existFilter);
+            groupLocationFilter.addFilter(exceptionFilter);
+
             List<MethodNode> matchedMethods = new ArrayList<>();
             for (MethodNode methodNode : classNode.methods) {
                 if (!isIgnore(methodNode)) {
@@ -83,7 +103,7 @@ public class Enhancer implements ClassFileTransformer {
                 if (AsmUtils.isNative(methodNode)) {
                     continue;
                 }
-                MethodProcessor methodProcessor = new MethodProcessor(classNode, methodNode);
+                MethodProcessor methodProcessor = new MethodProcessor(classNode, methodNode, groupLocationFilter);
                 for (InterceptorProcessor interceptor : interceptorProcessors) {
                     try {
                         List<Location> locations = interceptor.process(methodProcessor);

@@ -15,11 +15,12 @@ import lombok.NoArgsConstructor;
 // 方法入参，target，出参
 public class CallRecord {
     private int callChainId;
-    private Object target;
     private String method;
     private Object[] args;
     private Object returnValue;
+    private Object target;
     private Throwable exception;
     private String threadName;
     private String message;
+    private int depth;
 }

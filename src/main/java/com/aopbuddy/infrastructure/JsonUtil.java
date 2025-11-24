@@ -4,6 +4,7 @@ import com.aopbuddy.record.MethodChainKey;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public class JsonUtil {
@@ -47,7 +48,9 @@ public class JsonUtil {
     static {
         SimpleModule module = new SimpleModule();
         module.addKeyDeserializer(MethodChainKey.class, new MethodChainKeyDeserializer());
-        objectMapper.registerModule(module);;
+        objectMapper.registerModule(module);
+        // Disable FAIL_ON_EMPTY_BEANS to handle classes without serializable properties
+        objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
     public static String toJson(Object obj) {

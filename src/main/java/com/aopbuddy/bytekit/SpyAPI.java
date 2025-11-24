@@ -55,7 +55,7 @@ public class SpyAPI {
         INITED = false;
     }
 
-    // methodInfo:greetString|(Ljava/lang/String;)Ljava/lang/String;
+    // methodNode.access + "|" + methodNode.name + "|" + methodNode.desc
     public static void atEnter(Class<?> clazz, String methodInfo, Object target, Object[] args) {
         spyInstance.atEnter(clazz, methodInfo, target, args);
     }

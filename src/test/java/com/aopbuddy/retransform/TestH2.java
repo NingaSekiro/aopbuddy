@@ -1,6 +1,6 @@
 package com.aopbuddy.retransform;
 
-import com.aopbuddy.agent.TraceListener;
+import com.aopbuddy.record.TraceListener;
 import com.aopbuddy.aspect.MethodPointcut;
 import com.aopbuddy.infrastructure.JsonUtil;
 import com.aopbuddy.record.*;

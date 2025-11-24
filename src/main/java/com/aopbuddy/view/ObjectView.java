@@ -589,7 +589,7 @@ public class ObjectView implements View {
             else {
 
                 if (!isExpand(deep, expand)) {
-                    appendStringBuilder(buf, format("@%s[%s]", className, obj));
+                    appendStringBuilder(buf, format("@%s", className));
                 } else {
                     appendStringBuilder(buf, format("@%s[", className));
                     final List<Field> fields;
