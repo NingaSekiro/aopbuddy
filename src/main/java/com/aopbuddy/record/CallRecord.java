@@ -1,9 +1,12 @@
 package com.aopbuddy.record;
 
+import java.util.ArrayList;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 /**
  * 调用记录，存储单个方法调用的详细信息
@@ -14,6 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 // 方法入参，target，出参
 public class CallRecord {
+    private int threadLocalMethodId;
     private int callChainId;
     private String method;
     private Object[] args;
@@ -22,5 +26,7 @@ public class CallRecord {
     private Throwable exception;
     private String threadName;
     private String message;
-    private int depth;
+    @Builder.Default
+    private List<Integer> childIds = new ArrayList<>();
+    private String path;
 }

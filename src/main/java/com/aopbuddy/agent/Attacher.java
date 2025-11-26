@@ -33,6 +33,7 @@ public class Attacher {
      * 循环该如何减少录制数据？
      * private默认不展示，可以增量展示
      * 默认只展示本项目的首个方法（如果方法少，可以全部展示）(扩展时按照depth一级一级往下，或者往上）。depth临近的也不一定是父子关系
+     * 循环判断：改为parent相同的方法相同的只保留两个。
      */
 
     public static void main(String[] args) throws Exception {

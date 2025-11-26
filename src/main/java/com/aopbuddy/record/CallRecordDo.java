@@ -1,6 +1,8 @@
 package com.aopbuddy.record;
 
 import com.aopbuddy.view.ObjectView;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,6 +14,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 public class CallRecordDo {
     private Long id;
+    private int threadLocalMethodId;
     private Timestamp timestamp;
 
     private int callChainId;
@@ -21,7 +24,9 @@ public class CallRecordDo {
     private String target;
     private String threadName;
     private String message;
-    private int depth;
+
+    private List<Integer> childIds = new ArrayList<>();
+    private String path;
 
     public static CallRecordDo toCallRecordDo(CallRecord callRecord) {
         CallRecordDo callRecordDo = new CallRecordDo();
@@ -32,6 +37,9 @@ public class CallRecordDo {
         callRecordDo.setTarget(ObjectView.getDrawString(callRecord.getTarget(), 2));
         callRecordDo.setThreadName(callRecord.getThreadName());
         callRecordDo.setMessage(callRecord.getMessage());
+        callRecordDo.setThreadLocalMethodId(callRecord.getThreadLocalMethodId());
+        callRecordDo.setPath(callRecord.getPath());
+        callRecordDo.setChildIds(callRecord.getChildIds());
         return callRecordDo;
     }
 
