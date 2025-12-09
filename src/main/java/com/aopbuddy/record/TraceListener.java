@@ -1,20 +1,27 @@
 package com.aopbuddy.record;
 
-import com.aopbuddy.aspect.MethodPointcut;
+import static com.aopbuddy.record.ByteBuddyCallTracer.CALL_CHAIN_CONTEXT;
+import static com.aopbuddy.record.ByteBuddyCallTracer.CALL_CONTEXT;
+
 import com.aopbuddy.bytekit.MethodInfo;
+import com.aopbuddy.infrastructure.LoggerFactory;
 import com.aopbuddy.infrastructure.StringUtils;
-import com.aopbuddy.retransform.Advisor;
-import com.aopbuddy.retransform.Context;
 import com.aopbuddy.retransform.Listener;
-
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static com.aopbuddy.record.ByteBuddyCallTracer.*;
 
 
 public class TraceListener implements Listener {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TraceListener.class.getName());
 
   @Override
   public void before(Object target, Class<?> clazz, MethodInfo methodInfo, Object[] args) {
@@ -29,7 +36,7 @@ public class TraceListener implements Listener {
     if (!callRecords.isEmpty()) {
       CallRecord topCallRecord = callRecords.peek();
       topCallRecord.getChildIds().add(threadLocalMethodId);
-      callRecord.setPath(topCallRecord.getThreadLocalMethodId() + "|" + threadLocalMethodId);
+      callRecord.setPath(topCallRecord.getPath() + "|" + threadLocalMethodId);
     } else {
       callRecord.setPath(String.valueOf(threadLocalMethodId));
     }
@@ -67,6 +74,9 @@ public class TraceListener implements Listener {
     // 方法调用完成
     if (callRecords.isEmpty()) {
       List<CallRecord> callRecords1 = CALL_CHAIN_CONTEXT.get().getCallRecords();
+//      if (callRecords.size() > 200) {
+//        callRecords1 = removeCycle(callRecords1);
+//      }
       MethodChainKey methodChainKey = MethodChainKey.buildMethodChainKey(callRecords1);
       // 当前调用链结束，保存调用链
       int andIncrement = ByteBuddyCallTracer.CHAIN_CNT.getAndIncrement();
@@ -117,14 +127,20 @@ public class TraceListener implements Listener {
     }
   }
 
-  private static MethodPointcut getMethodPointcut() {
-    List<Advisor> advisors = Context.ADVISORS;
-    for (Advisor advisor : advisors) {
-      if (advisor.getListener() instanceof TraceListener) {
-        return (MethodPointcut) advisor.getPointcut();
+  private static List<CallRecord> removeCycle(List<CallRecord> callRecords) {
+    if (callRecords == null || callRecords.isEmpty()) {
+      return callRecords;
+    }
+    Map<String, Integer> methodCount = new HashMap<>();
+    List<CallRecord> result = new ArrayList<>();
+    for (CallRecord record : callRecords) {
+      String method = record.getMethod();
+      int count = methodCount.getOrDefault(method, 0);
+      if (count < 10) {
+        result.add(record);
+        methodCount.put(method, count + 1);
       }
     }
-    return null;
+    return result;
   }
-
 }
