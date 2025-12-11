@@ -1,12 +1,11 @@
 package com.aopbuddy.record;
 
 import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 /**
  * 调用记录，存储单个方法调用的详细信息

@@ -1,16 +1,24 @@
 package com.aopbuddy.retransform;
 
-import com.aopbuddy.record.TraceListener;
+import static com.aopbuddy.record.ByteBuddyCallTracer.CALL_CHAIN_CONTEXT;
+import static com.aopbuddy.record.ByteBuddyCallTracer.CALL_CONTEXT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import com.aopbuddy.aspect.MethodPointcut;
 import com.aopbuddy.infrastructure.JsonUtil;
-import com.aopbuddy.record.*;
+import com.aopbuddy.record.CaffeineCache;
+import com.aopbuddy.record.CallChainDo;
+import com.aopbuddy.record.CallRecordDo;
+import com.aopbuddy.record.MethodChain;
+import com.aopbuddy.record.MethodChainKey;
+import com.aopbuddy.record.TraceListener;
 import com.aopbuddytest.Model;
 import com.aopbuddytest.TargetService;
+import com.aopbuddytest.TestHelper;
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
+import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,13 +27,20 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static com.aopbuddy.record.ByteBuddyCallTracer.CALL_CHAIN_CONTEXT;
-import static com.aopbuddy.record.ByteBuddyCallTracer.CALL_CONTEXT;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import lombok.SneakyThrows;
+import net.bytebuddy.agent.ByteBuddyAgent;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TestH2 {
+    @SneakyThrows
+    @BeforeEach
+    public void init(){
+        Instrumentation inst = ByteBuddyAgent.install();
+        TestHelper.appendSpyJar( inst);
+        Context.init(inst);
+    }
 
     @AfterEach
     public void cleanup() {
@@ -36,7 +51,6 @@ public class TestH2 {
 
     @Test
     public void testTrace() {
-        Context.init(null);
         MethodPointcut pointcut = MethodPointcut.of(
                 "com.aopbuddytest.TargetService", "*", "(..)");
         Listener listener = new TraceListener();

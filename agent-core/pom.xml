@@ -75,6 +75,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.zeroturnaround</groupId>
+      <artifactId>zt-zip</artifactId>
+      <version>1.16</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.sun</groupId>
       <artifactId>tools</artifactId>
       <version>1.8</version>
