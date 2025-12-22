@@ -18,8 +18,8 @@ import java.util.jar.JarFile;
 import org.zeroturnaround.zip.ZipUtil;
 
 /**
- * 
- * @author hengyunabc 2020-05-19
+ *
+ * @author hengyunabc
  *
  */
 public class TestHelper {
@@ -27,6 +27,8 @@ public class TestHelper {
     private Class<?> interceptorClass;
 
     private boolean redefine;
+
+    private boolean reTransform;
 
     private String methodMatcher = "*";
 
@@ -43,6 +45,11 @@ public class TestHelper {
 
     public TestHelper redefine(boolean redefine) {
         this.redefine = redefine;
+        return this;
+    }
+
+    public TestHelper reTransform(boolean reTransform) {
+        this.reTransform = reTransform;
         return this;
     }
 
@@ -79,6 +86,10 @@ public class TestHelper {
 
         if (redefine) {
             AgentUtils.redefine(transform, bytes);
+        }
+
+        if (reTransform) {
+            AgentUtils.reTransform(transform, bytes);
         }
 
         return bytes;

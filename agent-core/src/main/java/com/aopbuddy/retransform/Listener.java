@@ -5,9 +5,9 @@ import com.aopbuddy.bytekit.MethodInfo;
 
 public interface Listener {
     //
-    void before(Object target, Class<?> clazz, MethodInfo methodInfo, Object[] args);
+    void before(Object target, Class<?> clazz, MethodInfo methodInfo, String[] argNames, Object[] args);
 
-    void after(Object target, Class<?> clazz, MethodInfo methodInfo, Object[] args, Object returnValue);
+    Object after(Object target, Class<?> clazz, MethodInfo methodInfo, Object[] args, Object returnValue);
 
     void onException(Object target, Class<?> clazz, MethodInfo methodInfo,Object[] args, Throwable throwable);
 }

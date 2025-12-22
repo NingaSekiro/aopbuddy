@@ -16,16 +16,16 @@ public class SpyInterceptors {
 
         @AtEnter(inline = true)
         public static void atEnter(@Binding.This Object target, @Binding.Class Class<?> clazz,
-                @Binding.MethodInfo String methodInfo, @Binding.Args Object[] args) {
-            SpyAPI.atEnter(clazz, methodInfo, target, args);
+                @Binding.MethodInfo String methodInfo,@Binding.ArgNames String[] argNames, @Binding.Args Object[] args) {
+            SpyAPI.atEnter(clazz, methodInfo, target, argNames, args);
         }
     }
     
     public static class SpyInterceptor2 {
         @AtExit(inline = true)
-        public static void atExit(@Binding.This Object target, @Binding.Class Class<?> clazz,
+        public static Object atExit(@Binding.This Object target, @Binding.Class Class<?> clazz,
                 @Binding.MethodInfo String methodInfo, @Binding.Args Object[] args, @Binding.Return Object returnObj) {
-            SpyAPI.atExit(clazz, methodInfo, target, args, returnObj);
+            return SpyAPI.atExit(clazz, methodInfo, target, args, returnObj);
         }
     }
     

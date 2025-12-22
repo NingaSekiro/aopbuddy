@@ -34,7 +34,18 @@ public class Attacher {
      * private默认不展示，可以增量展示
      * 默认只展示本项目的首个方法（如果方法少，可以全部展示）(扩展时按照depth一级一级往下，或者往上）。depth临近的也不一定是父子关系
      * 循环判断：改为parent相同的方法相同的只保留两个。
+     * - 父级方法的指纹 (Parent Signature)
+        - 当前方法 ID (Current Method ID)
+        - 调用点位置 (Call Site / Bytecode Index) —— 这是关键！
+        *
+        * sun.misc.Unsafe 直接读取内存
+        *
+        *
+        * - 对象深度 ( xcodemap.obj.max ) : 默认为 4 层。超过深度的对象字段将不再展开。
+- 集合大小 ( xcodemap.col.max ) : 默认为 32 。集合/数组最多只录制前 32 个元素。
+- 字符串长度 ( xcodemap.string.max ) : 默认为 4096 字符。超长会被截断。
      */
+
 
     public static void main(String[] args) throws Exception {
         String httpPort = "8888";

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -24,38 +25,44 @@ public class TraceListener implements Listener {
   private static final Logger LOGGER = LoggerFactory.getLogger(TraceListener.class.getName());
 
   @Override
-  public void before(Object target, Class<?> clazz, MethodInfo methodInfo, Object[] args) {
+  public void before(Object target, Class<?> clazz, MethodInfo methodInfo, String[] argNames,
+      Object[] args) {
     // 获取方法栈
-    Stack<CallRecord> callRecords = CALL_CONTEXT.get();
-    int threadLocalMethodId = CALL_CHAIN_CONTEXT.get().getCallRecords().size();
-    CallRecord callRecord = CallRecord.builder()
-        .threadLocalMethodId(threadLocalMethodId).target(target).method(
-            StringUtils.toCompleteMethodName(methodInfo.getMethodAccess(), clazz.getName(),
-                methodInfo.getMethodName())).args(args)
-        .build();
-    if (!callRecords.isEmpty()) {
-      CallRecord topCallRecord = callRecords.peek();
-      topCallRecord.getChildIds().add(threadLocalMethodId);
-      callRecord.setPath(topCallRecord.getPath() + "|" + threadLocalMethodId);
-    } else {
-      callRecord.setPath(String.valueOf(threadLocalMethodId));
-    }
+    try {
+      Stack<CallRecord> callRecords = CALL_CONTEXT.get();
+      int threadLocalMethodId = CALL_CHAIN_CONTEXT.get().getCallRecords().size();
+      CallRecord callRecord = CallRecord.builder()
+          .threadLocalMethodId(threadLocalMethodId).target(target).method(
+              StringUtils.toCompleteMethodName(methodInfo.getMethodAccess(), clazz.getName(),
+                  methodInfo.getMethodName())).argNames(argNames).args(args)
+          .build();
+      if (!callRecords.isEmpty()) {
+        CallRecord topCallRecord = callRecords.peek();
+        topCallRecord.getChildIds().add(threadLocalMethodId);
+        callRecord.setPath(topCallRecord.getPath() + "|" + threadLocalMethodId);
+      } else {
+        callRecord.setPath(String.valueOf(threadLocalMethodId));
+      }
 
-    // 判断是否是web请求
-    if (callRecords.isEmpty()) {
-      String message = extractMessage(target, clazz, methodInfo, args);
-      callRecord.setMessage(message);
+      // 判断是否是web请求
+      if (callRecords.isEmpty()) {
+        String message = extractMessage(target, clazz, methodInfo, args);
+        callRecord.setMessage(message);
+      }
+      callRecords.push(callRecord);
+      // 调用链
+      CALL_CHAIN_CONTEXT.get().getCallRecords().add(callRecord);
+    } catch (Throwable e) {
+      LOGGER.log(Level.SEVERE, "Error in TraceListener", e);
     }
-    callRecords.push(callRecord);
-    // 调用链
-    CALL_CHAIN_CONTEXT.get().getCallRecords().add(callRecord);
   }
 
 
   @Override
-  public void after(Object target, Class<?> clazz, MethodInfo methodInfo, Object[] args,
+  public Object after(Object target, Class<?> clazz, MethodInfo methodInfo, Object[] args,
       Object returnValue) {
     extracted(clazz, methodInfo, args, returnValue);
+    return null;
   }
 
 
@@ -68,32 +75,37 @@ public class TraceListener implements Listener {
 
   private static void extracted(Class<?> clazz, MethodInfo methodInfo, Object[] args,
       Object returnValue) {
-    Stack<CallRecord> callRecords = CALL_CONTEXT.get();
-    CallRecord beforeCallRecord = callRecords.pop();
-    beforeCallRecord.setReturnValue(returnValue);
-    // 方法调用完成
-    if (callRecords.isEmpty()) {
-      List<CallRecord> callRecords1 = CALL_CHAIN_CONTEXT.get().getCallRecords();
-//      if (callRecords.size() > 200) {
-//        callRecords1 = removeCycle(callRecords1);
-//      }
-      MethodChainKey methodChainKey = MethodChainKey.buildMethodChainKey(callRecords1);
-      // 当前调用链结束，保存调用链
-      int andIncrement = ByteBuddyCallTracer.CHAIN_CNT.getAndIncrement();
-      for (CallRecord record : callRecords1) {
-        record.setCallChainId(andIncrement);
+
+    try {
+      Stack<CallRecord> callRecords = CALL_CONTEXT.get();
+      CallRecord beforeCallRecord = callRecords.pop();
+      beforeCallRecord.setReturnValue(returnValue);
+      // 方法调用完成
+      if (callRecords.isEmpty()) {
+        List<CallRecord> callRecords1 = CALL_CHAIN_CONTEXT.get().getCallRecords();
+        //      if (callRecords.size() > 200) {
+        //        callRecords1 = removeCycle(callRecords1);
+        //      }
+        MethodChainKey methodChainKey = MethodChainKey.buildMethodChainKey(callRecords1);
+        // 当前调用链结束，保存调用链
+        int andIncrement = ByteBuddyCallTracer.CHAIN_CNT.getAndIncrement();
+        for (CallRecord record : callRecords1) {
+          record.setCallChainId(andIncrement);
+        }
+        // 设置线程名
+        callRecords1.get(0).setThreadName(Thread.currentThread().getName());
+        CallChainDo callChainDo = new CallChainDo();
+        callChainDo.setCallRecords(
+            callRecords1.stream().map(CallRecordDo::toCallRecordDo).collect(Collectors.toList()));
+        callChainDo.setTime(System.currentTimeMillis());
+        CaffeineCache.getCache().asMap().computeIfAbsent(methodChainKey, k -> new MethodChain());
+        CaffeineCache.get(methodChainKey).getCallRecordDos().offer(callChainDo);
+        // 重置调用链上下文
+        CALL_CONTEXT.remove();
+        CALL_CHAIN_CONTEXT.remove();
       }
-      // 设置线程名
-      callRecords1.get(0).setThreadName(Thread.currentThread().getName());
-      CallChainDo callChainDo = new CallChainDo();
-      callChainDo.setCallRecords(
-          callRecords1.stream().map(CallRecordDo::toCallRecordDo).collect(Collectors.toList()));
-      callChainDo.setTime(System.currentTimeMillis());
-      CaffeineCache.getCache().asMap().computeIfAbsent(methodChainKey, k -> new MethodChain());
-      CaffeineCache.get(methodChainKey).getCallRecordDos().offer(callChainDo);
-      // 重置调用链上下文
-      CALL_CONTEXT.remove();
-      CALL_CHAIN_CONTEXT.remove();
+    } catch (Throwable e) {
+      LOGGER.log(Level.SEVERE, "Error in TraceListener", e);
     }
   }
 

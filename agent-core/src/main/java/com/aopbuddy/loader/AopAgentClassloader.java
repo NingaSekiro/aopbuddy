@@ -4,8 +4,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 
-public class ApoAgentClassloader extends URLClassLoader {
-    public ApoAgentClassloader(URL[] urls) {
+public class AopAgentClassloader extends URLClassLoader {
+    public AopAgentClassloader(URL[] urls) {
         super(urls, ClassLoader.getSystemClassLoader().getParent());
     }
 

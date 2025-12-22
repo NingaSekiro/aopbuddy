@@ -70,6 +70,9 @@ public class TestH2 {
         assertEquals("1|com.aopbuddytest.TargetService|greetString",
                 methodChainKey.getStartMethodName());
         MethodChain methodChain = CaffeineCache.get(methodChainKey);
+        String json = JsonUtil.toJson(cacheMap);
+        Map<MethodChainKey, MethodChain> map = JsonUtil.parse(json, new TypeReference<Map<MethodChainKey, MethodChain>>() {
+        });
         assertNotNull(methodChain);
         assertEquals(0, CALL_CONTEXT.get().size());
         assertEquals(0, CALL_CHAIN_CONTEXT.get().getCallRecords().size());

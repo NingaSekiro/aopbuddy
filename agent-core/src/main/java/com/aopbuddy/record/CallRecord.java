@@ -20,6 +20,7 @@ public class CallRecord {
     private int callChainId;
     private String method;
     private Object[] args;
+    private String[] argNames;
     private Object returnValue;
     private Object target;
     private Throwable exception;

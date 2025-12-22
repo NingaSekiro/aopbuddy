@@ -3,7 +3,7 @@ package com.aopbuddy.agent;
 
 import static com.aopbuddy.infrastructure.Constants.AGENT_JAR_NAME;
 
-import com.aopbuddy.loader.ApoAgentClassloader;
+import com.aopbuddy.loader.AopAgentClassloader;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URL;
@@ -29,9 +29,9 @@ public class Agent {
 
 
   private static void startEarthBootstrap(String args, Instrumentation instrumentation) {
-    if (AGENT_LOADER != null) {
-      return;
-    }
+//    if (AGENT_LOADER != null) {
+//      return;
+//    }
     try {
       initSpy(instrumentation);
 //      Class.forName("java.aopbuddy.SpyAPI");
@@ -42,6 +42,7 @@ public class Agent {
       Class<?> bootstrapClass = AGENT_LOADER.loadClass(ARTHAS_BOOTSTRAP);
       bootstrapClass.getMethod("start", Instrumentation.class, String.class)
           .invoke(null, instrumentation, args);
+//      BootStrap.start(instrumentation,args);
     } catch (Throwable e) {
       throw new RuntimeException(e);
     }
@@ -55,7 +56,7 @@ public class Agent {
   }
 
   private static ClassLoader loadOrDefineClassLoader(File arthasCoreJarFile) throws Throwable {
-    return new ApoAgentClassloader(
+    return new AopAgentClassloader(
         new URL[]{arthasCoreJarFile.toURI().toURL()});
   }
 
