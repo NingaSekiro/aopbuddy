@@ -22,7 +22,7 @@ public class MethodListener implements Listener {
     System.out.println(
         "[Listener] after " + methodInfo.getMethodAccess() + "." + methodInfo.getMethodName()
             + " target=" + target + " args=" + JsonUtil.toJson(args) + " ret=" + returnValue);
-    return null;
+    return "mocked";
   }
 
   @Override

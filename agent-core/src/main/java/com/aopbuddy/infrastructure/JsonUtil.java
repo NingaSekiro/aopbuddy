@@ -44,46 +44,48 @@ public class JsonUtil {
 //    }
 
 
-    public static final ObjectMapper objectMapper = new ObjectMapper();
-    static {
-        SimpleModule module = new SimpleModule();
-        module.addKeyDeserializer(MethodChainKey.class, new MethodChainKeyDeserializer());
-        objectMapper.registerModule(module);
-        // Disable FAIL_ON_EMPTY_BEANS to handle classes without serializable properties
-        objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-    }
+  public static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static String toJson(Object obj) {
-        try {
-            return objectMapper.writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
+  static {
+    SimpleModule module = new SimpleModule();
+    module.addKeyDeserializer(MethodChainKey.class, new MethodChainKeyDeserializer());
+    module.addSerializer(com.aopbuddy.retransform.Advisor.class, new AdvisorSerializer());
+    objectMapper.registerModule(module);
+    // Disable FAIL_ON_EMPTY_BEANS to handle classes without serializable properties
+    objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+  }
 
-    public static String toJson(Object... obj) {
-        try {
-            return objectMapper.writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+  public static String toJson(Object obj) {
+    try {
+      return objectMapper.writeValueAsString(obj);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
     }
+  }
+
+  public static String toJson(Object... obj) {
+    try {
+      return objectMapper.writeValueAsString(obj);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
 
-    public static <T> T parse(String json, Class<T> clazz) {
-        try {
-            return objectMapper.readValue(json, clazz);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+  public static <T> T parse(String json, Class<T> clazz) {
+    try {
+      return objectMapper.readValue(json, clazz);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    public static <T> T parse(String json, TypeReference<T> typeReference) {
-        try {
-            return objectMapper.readValue(json, typeReference);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+  public static <T> T parse(String json, TypeReference<T> typeReference) {
+    try {
+      return objectMapper.readValue(json, typeReference);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
     }
+  }
 
 }

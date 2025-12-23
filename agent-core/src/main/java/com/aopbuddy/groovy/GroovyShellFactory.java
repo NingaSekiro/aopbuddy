@@ -1,13 +1,13 @@
 package com.aopbuddy.groovy;
 
+import com.aopbuddy.loader.GroovyConsoleLoader;
 import com.aopbuddy.vmtool.ClassUtil;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
-import org.codehaus.groovy.control.CompilerConfiguration;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.codehaus.groovy.control.CompilerConfiguration;
 
 public class GroovyShellFactory {
 

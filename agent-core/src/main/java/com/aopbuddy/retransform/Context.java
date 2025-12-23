@@ -56,10 +56,10 @@ public final class Context {
   }
 
   public synchronized static void unregisterAdvisor(Pointcut pointcut,
-      Class<? extends Listener> listenerClass) {
+      String className) {
     Optional<Advisor> first = ADVISORS.stream()
         .filter(advisor -> advisor.getPointcut().equals(pointcut))
-        .filter(advisor -> advisor.getListener().getClass().equals(listenerClass))
+        .filter(advisor -> className.equals(advisor.getListener().getClass().getName()))
         .findFirst();
     if (first.isPresent()) {
       first.get().removeSignature();
@@ -68,8 +68,8 @@ public final class Context {
   }
 
   public synchronized static void unregisterAdvisorByListener(
-      Class<? extends Listener> listenerClass) {
-    ADVISORS.removeIf(advisor -> advisor.getListener().getClass().equals(listenerClass));
+      String className) {
+    ADVISORS.removeIf(advisor -> className.equals(advisor.getListener().getClass().getName()));
   }
 
   public synchronized static void addCache(String key, Listener listener) {
@@ -88,8 +88,10 @@ public final class Context {
   }
 
   public static List<Listener> getCache(String className, String methodName) {
-    List<Listener> listeners = CACHE.get(className);
-    List<Listener> listeners1 = CACHE.get(key(className, methodName));
+    List<Listener> listeners =
+        CACHE.get(className) == null ? new ArrayList<>() : CACHE.get(className);
+    List<Listener> listeners1 = CACHE.get(key(className, methodName)) == null ? new ArrayList<>()
+        : CACHE.get(key(className, methodName));
     listeners.addAll(listeners1);
     return listeners;
   }

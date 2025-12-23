@@ -2,6 +2,7 @@ package com.aopbuddy.infrastructure;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.alibaba.fastjson2.JSON;
 import com.aopbuddy.record.TraceListener;
@@ -29,6 +30,10 @@ public class JsonUtilTest {
     // Verify that serialization worked
     assertNotNull(json);
     assertTrue(json.length() > 0);
+    
+    // Verify that the listener is serialized with its class name as key
+    assertFalse(json.contains("listener"));
+    assertTrue(json.contains("TraceListener"));
 
     System.out.println("Serialized Advisor: " + json);
   }

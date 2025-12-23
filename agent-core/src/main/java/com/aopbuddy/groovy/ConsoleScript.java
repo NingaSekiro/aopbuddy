@@ -84,7 +84,7 @@ public abstract class ConsoleScript extends Script {
   }
 
   public String deleteListener() {
-    Context.unregisterAdvisorByListener(TraceListener.class);
+    Context.unregisterAdvisorByListener(TraceListener.class.getName());
     CaffeineCache.getCache().invalidateAll();
     return "cancel record successful";
   }

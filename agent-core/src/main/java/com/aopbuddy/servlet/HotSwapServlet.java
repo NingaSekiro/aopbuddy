@@ -59,6 +59,7 @@ public class HotSwapServlet implements Action {
     LOGGER.info("retransformClasses " + classNames);
     try {
       inst.retransformClasses(classes.toArray(new Class[0]));
+      response.write("success");
     } catch (Throwable e) {
       LOGGER.log(Level.SEVERE, e.getMessage(), e);
       response.write(e.getMessage());

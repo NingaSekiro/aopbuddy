@@ -109,8 +109,9 @@ public class Enhancer implements ClassFileTransformer {
             matchedMethods.add(methodNode);
             if (filteredAdvisor.getPointcut().matchesMethodName("*")) {
               filteredAdvisor.addSignature(key(normalizedClassName, ""));
+            } else {
+              filteredAdvisor.addSignature(key(normalizedClassName, methodNode.name));
             }
-            filteredAdvisor.addSignature(key(normalizedClassName, methodNode.name));
           }
         }
       }
