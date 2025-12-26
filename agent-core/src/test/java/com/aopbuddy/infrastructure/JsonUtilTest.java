@@ -1,13 +1,14 @@
 package com.aopbuddy.infrastructure;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import com.alibaba.fastjson2.JSON;
-import com.aopbuddy.record.TraceListener;
 import com.aopbuddy.aspect.MethodPointcut;
+import com.aopbuddy.record.CallChainDo;
+import com.aopbuddy.record.TraceListener;
 import com.aopbuddy.retransform.Advisor;
+import java.util.concurrent.ArrayBlockingQueue;
 import org.junit.jupiter.api.Test;
 
 
@@ -39,22 +40,15 @@ public class JsonUtilTest {
   }
 
 
-  @Test
-  public void testSerializeString() {
-    String json = JsonUtil.toJson("{\"code\":1,\"msg\":null,\"data\":\"删除成功\",\"map\":{}}");
-    assertNotNull(json);
-    assertTrue(json.length() > 0);
-    System.out.println("Serialized String: " + json);
-  }
 
   @Test
-  public void testSerializeString_fast_json() {
-    String json = JSON.toJSONString(
-        "{\"code\":1,\"msg\":null,\"data\":\"删除成功\",\"map\":{}}");
-    assertNotNull(json);
-    assertTrue(json.length() > 0);
-    System.out.println("Serialized String: " + json);
+  public void test_jackson_ArrayBlockingQueue(){
+    ArrayBlockingQueue<CallChainDo> callRecordDos = new ArrayBlockingQueue<>(10);
+    CallChainDo callChainDo = new CallChainDo();
+    callChainDo.setTime(System.currentTimeMillis());
+    callRecordDos.add(callChainDo);
+    String jsonString = JsonUtil.toJson(callRecordDos);
+    JsonUtil.parse(jsonString, new com.fasterxml.jackson.core.type.TypeReference<ArrayBlockingQueue<CallChainDo>>(){});
+    System.out.println(jsonString);
   }
-
-
 }

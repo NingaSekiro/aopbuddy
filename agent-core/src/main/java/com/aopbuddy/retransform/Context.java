@@ -56,10 +56,10 @@ public final class Context {
   }
 
   public synchronized static void unregisterAdvisor(Pointcut pointcut,
-      String className) {
+      String listenerName) {
     Optional<Advisor> first = ADVISORS.stream()
         .filter(advisor -> advisor.getPointcut().equals(pointcut))
-        .filter(advisor -> className.equals(advisor.getListener().getClass().getName()))
+        .filter(advisor -> listenerName.equals(advisor.getListener().getListenerName()))
         .findFirst();
     if (first.isPresent()) {
       first.get().removeSignature();
@@ -68,8 +68,8 @@ public final class Context {
   }
 
   public synchronized static void unregisterAdvisorByListener(
-      String className) {
-    ADVISORS.removeIf(advisor -> className.equals(advisor.getListener().getClass().getName()));
+      String listenerName) {
+    ADVISORS.removeIf(advisor -> listenerName.equals(advisor.getListener().getListenerName()));
   }
 
   public synchronized static void addCache(String key, Listener listener) {

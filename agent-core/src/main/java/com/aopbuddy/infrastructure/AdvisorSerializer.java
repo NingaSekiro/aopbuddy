@@ -20,7 +20,7 @@ public class AdvisorSerializer extends JsonSerializer<Advisor> {
         
         // 序列化listener，使用Class名称作为key
         if (advisor.getListener() != null) {
-            String listenerName = advisor.getListener().getClass().getName();
+            String listenerName = advisor.getListener().getListenerName();
             gen.writeObjectField(listenerName, advisor.getListener());
         }
         

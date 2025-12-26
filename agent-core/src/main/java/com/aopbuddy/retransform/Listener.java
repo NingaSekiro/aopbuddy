@@ -5,6 +5,10 @@ import com.aopbuddy.bytekit.MethodInfo;
 
 public interface Listener {
 
+  default String getListenerName() {
+    return getClass().getSimpleName();
+  }
+
   //
   default void before(Object target, Class<?> clazz, MethodInfo methodInfo, String[] argNames,
       Object[] args) {
